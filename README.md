@@ -8,6 +8,8 @@ Crowdfunded micro-lending for borrower circles in Kenya. Kiva × Grameen, no MFI
 - `prototype/index.html` — clickable prototype; open it in a browser. Reference for UX and loan math.
 - `docs/first-session.md` — the prompt to start the first Claude Code session
 - `docs/deploy.md` — putting it online (Vercel, Neon, Resend, Africa's Talking)
+- `docs/legal-review.md` — packet for US and Kenyan counsel: every lender/borrower statement and open legal questions
+- `docs/decisions-brief.md` — the three open business decisions, with options
 
 ## Start
 

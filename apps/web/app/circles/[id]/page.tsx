@@ -181,7 +181,7 @@ export default async function CirclePublic({ params }: { params: Promise<{ id: s
           )}
           <Note>
             Borrowers pay a flat 7% fee, about {pct(aprFromFlatFee(700, 26))} APR. Lenders earn 0% and carry exchange-rate risk at about KSh {fx.kesPerUsd} per
-            dollar. If a payment is missed, the circle covers first, then the reserve, then lenders.
+            dollar. If a payment is missed, the circle can step in; after that the reserve covers unpaid principal before lenders lose anything.
           </Note>
         </aside>
       </div>
