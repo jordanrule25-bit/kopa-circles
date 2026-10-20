@@ -1,0 +1,259 @@
+// Kopa Circles data model. See docs/build-spec.md.
+//
+// Money: every amount is an integer in minor units. Columns ending in KesCents
+// hold Kenyan shilling cents; columns ending in Cents (no currency) hold US cents.
+// Balances are never edited in place: they are derived from LedgerEvent rows.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  LENDER
+  AGENT
+  ADMIN
+  PARTNER
+}
+
+enum LicenseType {
+  DCP
+  SACCO
+}
+
+enum CircleStatus {
+  FORMING
+  RAISING
+  REPAYING
+  COMPLETE
+  PAUSED
+}
+
+enum CircleScore {
+  A
+  B
+  C
+}
+
+enum LoanStatus {
+  LISTED
+  FUNDED
+  DISBURSED
+  REPAYING
+  CLOSED
+  DEFAULTED
+}
+
+enum Currency {
+  KES
+  USD
+}
+
+enum LedgerEventKind {
+  LOAN_LISTED
+  LENDER_FUNDED
+  DISBURSEMENT
+  RESERVE_IN
+  REPAYMENT
+  CIRCLE_COVER
+  OVERPAYMENT
+  RESERVE_OUT
+  LENDER_PAYOUT
+  LENDER_LOSS
+  FEE_WRITE_OFF
+  RESCHEDULE
+  LOAN_CLOSED
+}
+
+enum ReserveEventKind {
+  IN
+  OUT
+}
+
+enum ScoreSource {
+  MPESA_STATEMENT
+  BUREAU
+  AGENT
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String?  @unique
+  phone     String?  @unique
+  role      Role
+  createdAt DateTime @default(now())
+
+  lender Lender?
+  agent  Agent?
+}
+
+model Lender {
+  userId        String @id
+  user          User   @relation(fields: [userId], references: [id])
+  /// Display projection only; the ledger is the source of truth.
+  balanceCents  Int    @default(0)
+  tipDefaultBps Int    @default(500)
+
+  shares       LenderShare[]
+  ledgerEvents LedgerEvent[]
+}
+
+model Partner {
+  id          String      @id @default(cuid())
+  name        String
+  licenseType LicenseType
+  country     String      @default("KE")
+
+  agents  Agent[]
+  circles Circle[]
+}
+
+model Agent {
+  userId    String  @id
+  user      User    @relation(fields: [userId], references: [id])
+  town      String
+  partnerId String
+  partner   Partner @relation(fields: [partnerId], references: [id])
+  active    Boolean @default(true)
+
+  circles Circle[]
+}
+
+model Circle {
+  id        String       @id @default(cuid())
+  name      String
+  town      String
+  sector    String
+  agentId   String
+  agent     Agent        @relation(fields: [agentId], references: [userId])
+  partnerId String
+  partner   Partner      @relation(fields: [partnerId], references: [id])
+  cycle     Int          @default(1)
+  score     CircleScore  @default(B)
+  status    CircleStatus @default(FORMING)
+  story     String
+  createdAt DateTime     @default(now())
+
+  members      Member[]
+  loans        Loan[]
+  shares       LenderShare[]
+  ledgerEvents LedgerEvent[]
+}
+
+model Member {
+  id             String    @id @default(cuid())
+  circleId       String
+  circle         Circle    @relation(fields: [circleId], references: [id])
+  name           String
+  business       String
+  phoneHash      String
+  nationalIdHash String
+  consentAt      DateTime?
+
+  loans       Loan[]
+  scoreInputs ScoreInput[]
+}
+
+/// One loan per member per cycle. The circle is a social unit, never a co-signer.
+model Loan {
+  id                String     @id @default(cuid())
+  memberId          String
+  member            Member     @relation(fields: [memberId], references: [id])
+  circleId          String
+  circle            Circle     @relation(fields: [circleId], references: [id])
+  principalKesCents Int
+  feeBps            Int        @default(700)
+  weeks             Int        @default(26)
+  status            LoanStatus @default(LISTED)
+  disbursedAt       DateTime?
+  closedAt          DateTime?
+
+  installments Installment[]
+  shares       LenderShare[]
+  ledgerEvents LedgerEvent[]
+}
+
+model Installment {
+  id                       String    @id @default(cuid())
+  loanId                   String
+  loan                     Loan      @relation(fields: [loanId], references: [id])
+  n                        Int
+  dueOn                    DateTime  @db.Date
+  amountKesCents           Int
+  /// Principal part of amountKesCents, so lender repayments can be derived exactly.
+  principalKesCents        Int
+  paidKesCents             Int       @default(0)
+  paidAt                   DateTime?
+  coveredByCircleKesCents  Int       @default(0)
+
+  @@unique([loanId, n])
+}
+
+/// A lender's stake in one loan, or in a whole circle (spread pro rata over its loans).
+model LenderShare {
+  id             String   @id @default(cuid())
+  lenderId       String
+  lender         Lender   @relation(fields: [lenderId], references: [userId])
+  loanId         String?
+  loan           Loan?    @relation(fields: [loanId], references: [id])
+  circleId       String?
+  circle         Circle?  @relation(fields: [circleId], references: [id])
+  amountCents    Int
+  /// KES per USD at the moment of funding. Lenders bear FX risk.
+  fxRateAtFunding Decimal @db.Decimal(12, 6)
+  repaidCents    Int      @default(0)
+  lostCents      Int      @default(0)
+  createdAt      DateTime @default(now())
+}
+
+/// Append-only. Never update or delete rows.
+model LedgerEvent {
+  id          String          @id @default(cuid())
+  at          DateTime        @default(now())
+  kind        LedgerEventKind
+  loanId      String?
+  loan        Loan?           @relation(fields: [loanId], references: [id])
+  circleId    String?
+  circle      Circle?         @relation(fields: [circleId], references: [id])
+  lenderId    String?
+  lender      Lender?         @relation(fields: [lenderId], references: [userId])
+  amountMinor Int
+  currency    Currency
+  meta        Json            @default("{}")
+
+  @@index([loanId])
+  @@index([circleId])
+  @@index([lenderId])
+}
+
+/// Singleton first-loss reserve, funded by 1.5% of every disbursement.
+model Reserve {
+  id     Int            @id @default(1)
+  events ReserveEvent[]
+}
+
+/// Append-only. The reserve balance is the sum of IN minus OUT.
+model ReserveEvent {
+  id             String           @id @default(cuid())
+  reserveId      Int              @default(1)
+  reserve        Reserve          @relation(fields: [reserveId], references: [id])
+  at             DateTime         @default(now())
+  kind           ReserveEventKind
+  amountKesCents Int
+  loanId         String?
+  note           String?
+}
+
+model ScoreInput {
+  id                   String      @id @default(cuid())
+  memberId             String
+  member               Member      @relation(fields: [memberId], references: [id])
+  source               ScoreSource
+  weeklyInflowKesCents Int?
+  activeLoans          Int?
+  capturedAt           DateTime    @default(now())
+}

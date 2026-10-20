@@ -6,3 +6,6 @@ dist
 coverage
 .turbo
 .DS_Store
+*.tsbuildinfo
+test-results
+playwright-report
