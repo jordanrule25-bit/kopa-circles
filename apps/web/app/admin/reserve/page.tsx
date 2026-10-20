@@ -41,7 +41,7 @@ export default async function Reserve() {
         <Stat label="Paid out" value={kes(t("OUT")?._sum.amountKesCents ?? 0)} sub={`${t("OUT")?._count ?? 0} defaults covered`} />
       </Stats>
       <Panel>
-        <h2 className="text-lg font-semibold">History</h2>
+        <h2 className="text-xl font-semibold">History</h2>
         <div className="overflow-x-auto">
           <table className="data">
             <thead>

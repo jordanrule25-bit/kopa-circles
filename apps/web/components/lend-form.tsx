@@ -34,7 +34,7 @@ export function LendForm({
     <form action={formAction} className="grid gap-2" aria-label={`Lend to ${circleName}`}>
       <div className="flex flex-wrap gap-1.5">
         {options.map((a) => (
-          <label key={a} className={`cursor-pointer rounded-lg border px-2.5 py-1 text-sm font-semibold ${amount === a ? "border-accent bg-accent text-accent-ink" : "border-line bg-surface hover:border-accent"}`}>
+          <label key={a} className={`cursor-pointer rounded-full px-3.5 py-1 text-sm font-medium transition-colors ${amount === a ? "bg-fg text-bg" : "bg-surface-2 hover:bg-line"}`}>
             <input type="radio" name="amount" value={a} checked={amount === a} onChange={() => setAmount(a)} className="sr-only" />
             {Number.isInteger(a) ? `$${a}` : `$${a.toFixed(2)}`}
           </label>

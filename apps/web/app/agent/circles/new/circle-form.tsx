@@ -7,7 +7,7 @@ import { createCircle, type FormState } from "../../actions";
 export function CircleForm({ town, sectors }: { town: string; sectors: string[] }) {
   const [state, action, pending] = useActionState<FormState, FormData>(createCircle, {});
   return (
-    <form action={action} className="grid gap-4 rounded-card border border-line bg-surface p-4">
+    <form action={action} className="grid gap-4 rounded-card bg-surface shadow-card p-4">
       <label className="field">
         <span>Circle name</span>
         <input name="name" required placeholder="e.g. Mama Mboga Five" />

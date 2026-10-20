@@ -38,7 +38,7 @@ export default async function Repaying() {
                   return (
                     <tr key={c.id}>
                       <td>
-                        <Link href={`/admin/circles/${c.id}`} className="font-semibold text-accent underline underline-offset-2">
+                        <Link href={`/admin/circles/${c.id}`} className="font-medium text-accent hover:underline">
                           {c.name}
                         </Link>
                         <div className="text-xs text-muted">

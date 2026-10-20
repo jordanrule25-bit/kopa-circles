@@ -7,13 +7,13 @@ export function NavTabs({ tabs }: { tabs: Array<{ href: string; label: string }>
   const path = usePathname();
   const active = (href: string) => (href === "/" ? path === "/" || path.startsWith("/circles") : path === href || path.startsWith(href + "/"));
   return (
-    <nav className="flex w-full gap-1 overflow-x-auto" aria-label="Sections">
+    <nav className="order-last flex w-full gap-5 overflow-x-auto text-sm sm:order-none sm:w-auto" aria-label="Sections">
       {tabs.map((t) => (
         <Link
           key={t.href}
           href={t.href}
           aria-current={active(t.href) ? "page" : undefined}
-          className={`whitespace-nowrap border-b-[3px] px-3 py-2.5 font-semibold ${active(t.href) ? "border-accent text-fg" : "border-transparent text-muted hover:text-fg"}`}
+          className={`whitespace-nowrap py-1 transition-colors ${active(t.href) ? "font-medium text-fg" : "text-muted hover:text-fg"}`}
         >
           {t.label}
         </Link>

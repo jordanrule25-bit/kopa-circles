@@ -3,6 +3,7 @@ import { lendToCircle } from "@/app/lend-actions";
 import { type CircleFull, type CircleSummary, statusChip } from "@/lib/circles";
 import { ordinal, pct, usd0 } from "@/lib/format";
 import { LendForm } from "./lend-form";
+import { GrowthStage } from "./plants";
 import { Card, Chip, Dots, Progress, Score } from "./ui";
 
 export function CircleCard({ c, s, mineCents, balanceCents }: { c: CircleFull; s: CircleSummary; mineCents: number; balanceCents: number | null }) {
@@ -11,7 +12,7 @@ export function CircleCard({ c, s, mineCents, balanceCents }: { c: CircleFull; s
     <Card>
       <div className="flex items-start justify-between gap-3">
         <div>
-          <h3 className="text-lg font-semibold">
+          <h3 className="text-xl font-semibold">
             <Link href={`/circles/${c.id}`} className="hover:underline">
               {c.name}
             </Link>
@@ -20,18 +21,21 @@ export function CircleCard({ c, s, mineCents, balanceCents }: { c: CircleFull; s
             {c.town}, Kenya · {c.sector}
           </div>
         </div>
-        <Score score={c.score} />
+        <div className="flex items-center gap-2">
+          <GrowthStage status={c.status} />
+          <Score score={c.score} />
+        </div>
       </div>
       <div className="flex flex-wrap gap-1.5">
         <Chip tone={st.tone}>{st.label}</Chip>
         <Chip>Loan {ordinal(c.cycle)}</Chip>
         {mineCents > 0 && <Chip tone="good">You: {usd0(mineCents)}</Chip>}
       </div>
-      <p className="text-[0.9rem]">{c.story}</p>
+      <p className="text-[0.95rem] leading-relaxed text-muted">{c.story}</p>
       <div className="flex items-center justify-between gap-2 text-sm">
         <Dots states={s.members.filter((m) => m.loan).map((m) => m.state)} />
-        <Link href={`/circles/${c.id}`} className="font-semibold text-accent underline underline-offset-[3px]">
-          See members
+        <Link href={`/circles/${c.id}`} className="font-medium text-accent hover:underline">
+          Members ›
         </Link>
       </div>
       {c.status === "RAISING" ? (

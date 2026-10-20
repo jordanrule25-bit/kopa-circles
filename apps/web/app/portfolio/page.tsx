@@ -62,7 +62,7 @@ export default async function Portfolio() {
         </Empty>
       ) : (
         <Panel>
-          <h2 className="text-lg font-semibold">Your circles</h2>
+          <h2 className="text-xl font-semibold">Your circles</h2>
           <div className="overflow-x-auto">
             <table className="data">
               <thead>
@@ -83,7 +83,7 @@ export default async function Portfolio() {
                   return (
                     <tr key={circle.id}>
                       <td>
-                        <Link href={`/circles/${circle.id}`} className="font-semibold text-accent underline underline-offset-2">
+                        <Link href={`/circles/${circle.id}`} className="font-medium text-accent hover:underline">
                           {circle.name}
                         </Link>
                         <div className="text-xs text-muted">{circle.town}</div>
@@ -107,7 +107,7 @@ export default async function Portfolio() {
       )}
 
       <Panel>
-        <h2 className="text-lg font-semibold">Activity</h2>
+        <h2 className="text-xl font-semibold">Activity</h2>
         {events.length === 0 ? (
           <p className="text-muted">Nothing yet.</p>
         ) : (

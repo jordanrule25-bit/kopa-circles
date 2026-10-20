@@ -1,6 +1,7 @@
 import { installmentKes, type LimitDecision } from "@kopa/core";
 import { prisma } from "@kopa/db";
 import { notFound } from "next/navigation";
+import { GrowthStage } from "@/components/plants";
 import { Back, Chip, Note, PageHead, Panel } from "@/components/ui";
 import { CIRCLE_SIZE, MIN_QUALIFYING } from "@/lib/circle-rules";
 import { DECLINE_LABEL, kes, STATUS_LABEL, usd } from "@/lib/format";
@@ -46,22 +47,25 @@ export default async function CirclePage({ params }: { params: Promise<{ id: str
           title={circle.name}
           sub={`${circle.town} · ${circle.sector} · loan ${circle.cycle}`}
           action={
-            <Chip tone={forming ? "neutral" : "good"} data-testid="circle-status" className="text-sm">
-              {STATUS_LABEL[circle.status]}
-            </Chip>
+            <div className="flex items-center gap-2">
+              <GrowthStage status={circle.status} size={30} />
+              <Chip tone={forming ? "neutral" : "good"} data-testid="circle-status" className="text-sm">
+                {STATUS_LABEL[circle.status]}
+              </Chip>
+            </div>
           }
         />
         <p className="mt-3">{circle.story}</p>
       </div>
 
       <section className="grid gap-2">
-        <h2 className="text-lg font-semibold">
+        <h2 className="text-xl font-semibold">
           Members <span className="font-body font-normal text-muted">({circle.members.length} of {CIRCLE_SIZE})</span>
         </h2>
         {rows.length === 0 ? (
           <p className="text-sm text-muted">No members yet.</p>
         ) : (
-          <div className="overflow-x-auto rounded-card border border-line bg-surface">
+          <div className="overflow-x-auto rounded-card bg-surface shadow-card">
             <table className="data">
               <thead>
                 <tr>

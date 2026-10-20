@@ -2,6 +2,7 @@ import { aprFromFlatFee, installmentKes } from "@kopa/core";
 import { notFound } from "next/navigation";
 import { lendToCircle } from "@/app/lend-actions";
 import { LendForm } from "@/components/lend-form";
+import { GrowthStage } from "@/components/plants";
 import { Back, Chip, Note, PageHead, Panel, Progress, Score, Stat, Stats } from "@/components/ui";
 import { loadCircle, statusChip, summarize } from "@/lib/circles";
 import { kes, ordinal, pct, usd, usd0 } from "@/lib/format";
@@ -28,6 +29,7 @@ export default async function CirclePublic({ params }: { params: Promise<{ id: s
           sub={`${c.town}, Kenya · ${c.sector} · ${ordinal(c.cycle)} loan`}
           action={
             <div className="flex items-center gap-2">
+              <GrowthStage status={c.status} size={30} />
               <Chip tone={st.tone}>{st.label}</Chip>
               <Score score={c.score} />
             </div>
@@ -61,7 +63,7 @@ export default async function CirclePublic({ params }: { params: Promise<{ id: s
       )}
 
       <Panel>
-        <h2 className="text-lg font-semibold">Members</h2>
+        <h2 className="text-xl font-semibold">Members</h2>
         <div className="overflow-x-auto">
           <table className="data">
             <thead>

@@ -12,8 +12,8 @@ export function MemberForm({ action, remaining }: { action: (s: FormState, f: Fo
   }, [state]);
 
   return (
-    <form ref={ref} action={formAction} className="grid gap-4 rounded-card border border-line bg-surface p-4">
-      <h2 className="text-lg font-semibold">
+    <form ref={ref} action={formAction} className="grid gap-4 rounded-card bg-surface shadow-card p-4">
+      <h2 className="text-xl font-semibold">
         Add a member <span className="font-body font-normal text-muted">({remaining} to go)</span>
       </h2>
       <div className="grid gap-4 sm:grid-cols-2">

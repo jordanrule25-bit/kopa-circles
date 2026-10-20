@@ -19,7 +19,7 @@ export default async function AdminListings() {
       <PageHead title="Listings" sub="Approve circles agents have submitted, then disburse once they're funded." />
 
       <section className="grid gap-3">
-        <h2 className="text-lg font-semibold">
+        <h2 className="text-xl font-semibold">
           Waiting for approval <span className="font-body font-normal text-muted">({submitted.length})</span>
         </h2>
         {submitted.length === 0 ? (
@@ -71,7 +71,7 @@ export default async function AdminListings() {
       </section>
 
       <section className="grid gap-3">
-        <h2 className="text-lg font-semibold">
+        <h2 className="text-xl font-semibold">
           Raising <span className="font-body font-normal text-muted">({raising.length})</span>
         </h2>
         {raising.length === 0 ? (

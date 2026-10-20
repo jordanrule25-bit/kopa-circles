@@ -48,7 +48,7 @@ export default async function Platform() {
       </Stats>
       <div className="grid gap-5 md:grid-cols-[1.2fr_1fr]">
         <Panel>
-          <h2 className="text-lg font-semibold">Recent activity</h2>
+          <h2 className="text-xl font-semibold">Recent activity</h2>
           <ul className="grid gap-1.5 text-sm">
             {recent.map((e) => (
               <li key={e.id} className="flex gap-3">
@@ -59,7 +59,7 @@ export default async function Platform() {
           </ul>
         </Panel>
         <Panel>
-          <h2 className="text-lg font-semibold">How the money works</h2>
+          <h2 className="text-xl font-semibold">How the money works</h2>
           <ul className="grid list-disc gap-1.5 pl-5 text-sm">
             <li>Borrowers pay a flat 7% fee over 26 weekly payments, about {pct(aprFromFlatFee(700, 26))} APR.</li>
             <li>Lenders get principal back and earn 0% interest, always.</li>

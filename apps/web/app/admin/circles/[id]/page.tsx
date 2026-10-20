@@ -2,6 +2,7 @@ import { installmentKes } from "@kopa/core";
 import { notFound } from "next/navigation";
 import { closeDefault, meeting } from "@/app/admin/actions";
 import { ActionForm } from "@/components/action-form";
+import { GrowthStage } from "@/components/plants";
 import { Back, Chip, Note, PageHead, Panel, Stat, Stats } from "@/components/ui";
 import { loadCircle, statusChip, summarize } from "@/lib/circles";
 import { todayIso } from "@/lib/dates";
@@ -23,7 +24,13 @@ export default async function AdminCircle({ params }: { params: Promise<{ id: st
     <div className="grid gap-5">
       <div>
         <Back href="/admin/repaying">Repaying circles</Back>
-        <PageHead title={c.name} sub={`${c.town} · ${c.sector} · loan ${c.cycle} · ${c.agent.partner.name}`} action={<Chip tone={st.tone}>{st.label}</Chip>} />
+        <PageHead title={c.name} sub={`${c.town} · ${c.sector} · loan ${c.cycle} · ${c.agent.partner.name}`} action={
+            <div className="flex items-center gap-2">
+              <GrowthStage status={c.status} size={30} />
+              <Chip tone={st.tone}>{st.label}</Chip>
+            </div>
+          }
+        />
       </div>
 
       <Stats>
@@ -36,7 +43,7 @@ export default async function AdminCircle({ params }: { params: Promise<{ id: st
       {c.status === "REPAYING" && repaying.length > 0 && (
         <Panel>
           <div>
-            <h2 className="text-lg font-semibold">Record this week’s meeting</h2>
+            <h2 className="text-xl font-semibold">Record this week’s meeting</h2>
             <p className="text-sm text-muted">
               Prefilled with what each member owes now (oldest installment first, including arrears). Change any amount. Use “Circle covered” when
               the others pay for a member.
@@ -79,7 +86,7 @@ export default async function AdminCircle({ params }: { params: Promise<{ id: st
                             min={0}
                             step={1}
                             defaultValue={Math.round(owed / 100)}
-                            className="num w-28 rounded-md border border-line bg-bg px-2 py-1 text-right"
+                            className="num w-28 rounded-lg bg-surface-2 px-2.5 py-1.5 text-right"
                           />
                         </td>
                         <td className="r">
@@ -90,7 +97,7 @@ export default async function AdminCircle({ params }: { params: Promise<{ id: st
                             min={0}
                             step={1}
                             placeholder="0"
-                            className="num w-28 rounded-md border border-line bg-bg px-2 py-1 text-right"
+                            className="num w-28 rounded-lg bg-surface-2 px-2.5 py-1.5 text-right"
                           />
                         </td>
                       </tr>
@@ -105,7 +112,7 @@ export default async function AdminCircle({ params }: { params: Promise<{ id: st
       )}
 
       <Panel>
-        <h2 className="text-lg font-semibold">Members</h2>
+        <h2 className="text-xl font-semibold">Members</h2>
         <div className="overflow-x-auto">
           <table className="data">
             <thead>
@@ -139,14 +146,14 @@ export default async function AdminCircle({ params }: { params: Promise<{ id: st
 
       {repaying.length > 0 && (
         <Panel>
-          <h2 className="text-lg font-semibold">Close a loan that won’t be repaid</h2>
+          <h2 className="text-xl font-semibold">Close a loan that won’t be repaid</h2>
           <p className="text-sm text-muted">
             Use only after the circle and a reschedule have been tried. Unpaid principal is covered by the reserve first; anything beyond it is a
             lender loss. No public shaming, no contacting phone contacts, no home visits.
           </p>
           <div className="grid gap-4 md:grid-cols-2">
             {repaying.map((m) => (
-              <div key={m.id} className="rounded-lg border border-line p-3">
+              <div key={m.id} className="rounded-xl bg-surface-2 p-4">
                 <div className="mb-2 font-semibold">
                   {m.name} <span className="text-sm font-normal text-muted">· {kes(m.arrearsKes)} behind</span>
                 </div>

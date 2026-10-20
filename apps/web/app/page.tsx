@@ -2,7 +2,7 @@ import { aprFromFlatFee, FEE_BPS, WEEKS } from "@kopa/core";
 import { reserveBalanceKes, prisma } from "@kopa/db";
 import Link from "next/link";
 import { CircleCard } from "@/components/circle-card";
-import { Empty, Panel } from "@/components/ui";
+import { Empty } from "@/components/ui";
 import { loadCircles, summarize } from "@/lib/circles";
 import { kes, pct } from "@/lib/format";
 import { currentUser } from "@/lib/session";
@@ -26,39 +26,41 @@ export default async function Lend({ searchParams }: { searchParams: Promise<{ s
 
   return (
     <>
-      <Panel className="sm:grid-cols-[1.4fr_1fr] sm:items-center">
-        <div className="grid gap-2">
-          <h1 className="text-[1.6rem] font-semibold">Lend $25 to a circle of five small businesses in Kenya</h1>
-          <p className="text-muted">
-            Each member gets their own loan, paid out to their M-Pesa wallet and repaid weekly at the circle meeting. You get your principal back.
-            You never earn interest.
-          </p>
-        </div>
-        <ul className="grid gap-1.5 text-sm">
-          <li>
-            <span className="label">Borrowers pay</span> <span className="num">7% flat · {pct(aprFromFlatFee(FEE_BPS, WEEKS))} APR</span>
-          </li>
-          <li>
-            <span className="label">If a payment is missed</span> circle covers, then the reserve, then lenders
-          </li>
-          <li>
-            <span className="label">First-loss reserve</span> <span className="num">{kes(reserve)}</span>{" "}
-            <Link href="/platform" className="text-accent underline underline-offset-2">
-              details
-            </Link>
-          </li>
-        </ul>
-      </Panel>
+      <section className="mx-auto grid max-w-3xl justify-items-center gap-4 py-6 text-center sm:py-10">
+        <h1 className="text-4xl font-semibold leading-[1.08] sm:text-6xl">Lend $25 to a circle of five small businesses in Kenya</h1>
+        <p className="max-w-2xl text-lg text-muted sm:text-xl">
+          Each member gets their own loan, paid to their M-Pesa wallet and repaid weekly at the circle meeting. You get your principal back. You
+          never earn interest.
+        </p>
+        <dl className="mt-4 grid w-full grid-cols-1 gap-6 sm:grid-cols-3">
+          <div>
+            <dt className="label">Borrowers pay</dt>
+            <dd className="num text-xl font-semibold">7% flat · {pct(aprFromFlatFee(FEE_BPS, WEEKS))} APR</dd>
+          </div>
+          <div>
+            <dt className="label">If a payment is missed</dt>
+            <dd className="text-xl font-semibold">Circle, reserve, then lenders</dd>
+          </div>
+          <div>
+            <dt className="label">First-loss reserve</dt>
+            <dd className="num text-xl font-semibold">
+              <Link href="/platform" className="hover:underline">
+                {kes(reserve)} ›
+              </Link>
+            </dd>
+          </div>
+        </dl>
+      </section>
 
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h2 className="text-[1.45rem] font-semibold">Circles</h2>
-        <nav className="flex gap-1.5" aria-label="Filter circles">
+        <h2 className="text-2xl font-semibold">Circles</h2>
+        <nav className="flex gap-1 rounded-full bg-surface p-1 shadow-card" aria-label="Filter circles">
           {FILTERS.map((f) => (
             <Link
               key={f.key}
               href={f.key === "open" ? "/" : `/?show=${f.key}`}
               aria-current={show === f.key ? "true" : undefined}
-              className={`rounded-full border px-3 py-1 text-sm font-semibold ${show === f.key ? "border-accent bg-accent-soft" : "border-line bg-surface hover:border-accent"}`}
+              className={`rounded-full px-3.5 py-1 text-sm font-medium transition-colors ${show === f.key ? "bg-fg text-bg" : "text-muted hover:text-fg"}`}
             >
               {f.label}
             </Link>
@@ -69,7 +71,7 @@ export default async function Lend({ searchParams }: { searchParams: Promise<{ s
       {circles.length === 0 ? (
         <Empty title="Nothing here right now">Every listed circle is funded. New circles list as agents submit them.</Empty>
       ) : (
-        <div className="grid gap-4 sm:grid-cols-[repeat(auto-fill,minmax(300px,1fr))]">
+        <div className="grid gap-5 sm:grid-cols-[repeat(auto-fill,minmax(310px,1fr))]">
           {circles.map((c) => (
             <CircleCard
               key={c.id}
@@ -81,7 +83,6 @@ export default async function Lend({ searchParams }: { searchParams: Promise<{ s
           ))}
         </div>
       )}
-      <p className="text-xs text-muted">All circles and people shown are fictional sample data during the pilot build.</p>
     </>
   );
 }
