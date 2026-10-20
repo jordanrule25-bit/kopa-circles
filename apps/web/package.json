@@ -4,9 +4,9 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "next dev --port 3000",
+    "dev": "dotenv -e ../../.env -- next dev --port 3000",
     "build": "next build",
-    "start": "next start --port 3000",
+    "start": "dotenv -e ../../.env -- next start --port 3000",
     "lint": "eslint .",
     "typecheck": "tsc",
     "test:e2e": "playwright test"
@@ -16,7 +16,8 @@
     "@kopa/db": "workspace:*",
     "next": "^15.5.0",
     "react": "^19.1.0",
-    "react-dom": "^19.1.0"
+    "react-dom": "^19.1.0",
+    "zod": "^4.6.7"
   },
   "devDependencies": {
     "@playwright/test": "^1.56.0",
@@ -24,6 +25,7 @@
     "@types/node": "^22.0.0",
     "@types/react": "^19.1.0",
     "@types/react-dom": "^19.1.0",
+    "dotenv-cli": "^10.0.0",
     "tailwindcss": "^4.1.0"
   }
 }

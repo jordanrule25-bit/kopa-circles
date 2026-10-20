@@ -1,4 +1,5 @@
 import { aprFromFlatFee, FEE_BPS, WEEKS } from "@kopa/core";
+import Link from "next/link";
 
 export default function Home() {
   const apr = aprFromFlatFee(FEE_BPS, WEEKS);
@@ -12,6 +13,9 @@ export default function Home() {
         Borrowers pay a flat {FEE_BPS / 100}% fee over {WEEKS} weekly installments, about{" "}
         <span data-testid="apr">{(apr * 100).toFixed(1)}%</span> APR.
       </p>
+      <Link href="/agent" className="mt-8 inline-block rounded bg-emerald-700 px-4 py-2 font-medium text-white hover:bg-emerald-800">
+        Agent tools
+      </Link>
     </main>
   );
 }
