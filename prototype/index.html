@@ -1,0 +1,571 @@
+<title>Kopa Circles</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Instrument+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: app shell — sticky top bar with tabs, one working column of cards and panels, a side detail drawer on wide screens */
+:root{
+  --bg:#f5f6f2; --surface:#ffffff; --surface-2:#eef0ea; --line:#d9ddd2;
+  --fg:#1d2420; --muted:#5f6a62; --accent:#1f7a5a; --accent-ink:#ffffff; --accent-soft:#dcefe6;
+  --sun:#c98a12; --sun-soft:#f7ebcf;
+  --good:#1f7a5a; --warn:#b7791f; --bad:#b4413a; --bad-soft:#f6dedb;
+  --font-display:"Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+  --font-body:"Instrument Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono:"IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+  --r:10px;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#121614; --surface:#1a201d; --surface-2:#222a26; --line:#2f3934;
+  --fg:#e7ece8; --muted:#9aa69e; --accent:#4cc596; --accent-ink:#0d1a14; --accent-soft:#1d3a2f;
+  --sun:#e6b04a; --sun-soft:#3a2f17; --good:#4cc596; --warn:#e6b04a; --bad:#e8786f; --bad-soft:#3d2422; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#121614; --surface:#1a201d; --surface-2:#222a26; --line:#2f3934;
+  --fg:#e7ece8; --muted:#9aa69e; --accent:#4cc596; --accent-ink:#0d1a14; --accent-soft:#1d3a2f;
+  --sun:#e6b04a; --sun-soft:#3a2f17; --good:#4cc596; --warn:#e6b04a; --bad:#e8786f; --bad-soft:#3d2422; color-scheme:dark}
+
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font-family:var(--font-body);font-size:15px;line-height:1.5}
+.num{font-family:var(--font-mono);font-variant-numeric:tabular-nums}
+h1,h2,h3{font-family:var(--font-display);margin:0;text-wrap:balance;letter-spacing:-.01em}
+h2{font-size:1.45rem}
+h3{font-size:1.1rem}
+.label{font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:600}
+.muted{color:var(--muted)}
+button,input,select{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:10;background:var(--surface);border-bottom:1px solid var(--line)}
+.top-in{max-width:1180px;margin:0 auto;padding:12px 16px 0;display:flex;flex-wrap:wrap;align-items:center;gap:8px 20px}
+.brand{display:flex;align-items:center;gap:10px}
+.brand h1{font-size:1.35rem}
+.ring{width:26px;height:26px;flex:none}
+.badge{font-size:.72rem;font-weight:600;padding:2px 8px;border-radius:99px;background:var(--sun-soft);color:var(--fg);border:1px solid var(--line)}
+.wallet{margin-left:auto;display:flex;align-items:baseline;gap:8px}
+.wallet .num{font-size:1.1rem;font-weight:500}
+nav{width:100%;display:flex;gap:4px;overflow-x:auto}
+nav button{background:none;border:0;border-bottom:3px solid transparent;padding:10px 12px;font-weight:600;color:var(--muted);white-space:nowrap}
+nav button[aria-selected="true"]{color:var(--fg);border-color:var(--accent)}
+
+main{max-width:1180px;margin:0 auto;padding:20px 16px 48px;display:grid;gap:20px}
+.bar{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between}
+.sim{display:flex;flex-wrap:wrap;gap:8px;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:10px 12px}
+.btn{border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:7px 12px;font-weight:600}
+.btn:hover{border-color:var(--accent)}
+.btn.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.week{font-family:var(--font-mono);font-size:.9rem}
+
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:16px;display:flex;flex-direction:column;gap:12px;min-width:0}
+.card-head{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}
+.place{font-size:.85rem;color:var(--muted)}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{font-size:.75rem;font-weight:600;padding:2px 8px;border-radius:99px;background:var(--surface-2);border:1px solid var(--line)}
+.chip.a{background:var(--accent-soft);color:var(--fg)}
+.chip.c{background:var(--sun-soft)}
+.chip.late{background:var(--bad-soft)}
+.score{font-family:var(--font-mono);font-weight:500;font-size:.85rem;padding:2px 7px;border-radius:6px;border:1px solid var(--line)}
+.dots{display:flex;gap:4px}
+.dot{width:12px;height:12px;border-radius:50%;background:var(--accent);opacity:.85}
+.dot.late{background:var(--bad)}
+.dot.pending{background:var(--line)}
+.progress{height:8px;background:var(--surface-2);border-radius:99px;overflow:hidden}
+.progress span{display:block;height:100%;background:var(--accent);border-radius:99px}
+.progress.sun span{background:var(--sun)}
+.row{display:flex;justify-content:space-between;gap:8px;font-size:.88rem}
+.fund{display:flex;gap:6px;flex-wrap:wrap}
+.fund .btn{padding:5px 10px;font-size:.88rem}
+.link{background:none;border:0;padding:0;color:var(--accent);font-weight:600;text-decoration:underline;text-underline-offset:3px}
+
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px}
+.stat{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:14px}
+.stat .v{font-family:var(--font-mono);font-size:1.4rem;font-weight:500;margin-top:4px}
+.stat .s{font-size:.8rem;color:var(--muted)}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:18px;display:grid;gap:14px;min-width:0;align-content:start}
+.tablewrap{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:.88rem}
+th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:600}
+td.r,th.r{text-align:right}
+.two{display:grid;grid-template-columns:1.2fr 1fr;gap:20px;align-items:start}
+@media (max-width:860px){.two{grid-template-columns:1fr}}
+
+form.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
+.field{display:grid;gap:4px}
+.field label{font-size:.82rem;font-weight:600}
+.field input,.field select{border:1px solid var(--line);background:var(--bg);border-radius:8px;padding:8px 10px;width:100%}
+.member-row{display:grid;grid-template-columns:1.1fr 1.3fr .8fr .6fr;gap:8px;align-items:end}
+@media (max-width:620px){.member-row{grid-template-columns:1fr 1fr}}
+.verdict{border-radius:8px;padding:10px 12px;font-size:.9rem}
+.verdict.ok{background:var(--accent-soft)}
+.verdict.no{background:var(--bad-soft)}
+
+.log{display:grid;gap:6px;max-height:280px;overflow:auto;font-size:.85rem}
+.log div{display:flex;gap:10px}
+.log .num{color:var(--muted);flex:none}
+
+dialog{border:1px solid var(--line);border-radius:14px;background:var(--surface);color:var(--fg);padding:0;width:min(720px,calc(100% - 32px));max-height:85vh}
+dialog::backdrop{background:rgba(10,14,12,.45)}
+.dlg{padding:20px;display:grid;gap:16px}
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--fg);color:var(--bg);padding:10px 16px;border-radius:8px;font-weight:600;font-size:.9rem;z-index:30}
+.note{font-size:.8rem;color:var(--muted)}
+@media (prefers-reduced-motion:no-preference){.progress span{transition:width .4s ease}}
+</style>
+
+<header class="top">
+  <div class="top-in">
+    <div class="brand">
+      <svg class="ring" viewBox="0 0 26 26" aria-hidden="true"><g fill="none" stroke="var(--accent)" stroke-width="2.2"><circle cx="13" cy="5" r="3"/><circle cx="20.6" cy="10.5" r="3"/><circle cx="17.7" cy="19.5" r="3"/><circle cx="8.3" cy="19.5" r="3"/><circle cx="5.4" cy="10.5" r="3"/></g></svg>
+      <h1>Kopa Circles</h1>
+      <span class="badge">Prototype · sample data</span>
+    </div>
+    <div class="wallet"><span class="label">Your lending balance</span><span class="num" id="walletTop">$0</span></div>
+    <nav role="tablist" aria-label="Sections">
+      <button role="tab" id="tab-lend" aria-selected="true" data-tab="lend">Lend</button>
+      <button role="tab" id="tab-portfolio" aria-selected="false" data-tab="portfolio">My portfolio</button>
+      <button role="tab" id="tab-borrow" aria-selected="false" data-tab="borrow">Start a circle</button>
+      <button role="tab" id="tab-platform" aria-selected="false" data-tab="platform">Platform</button>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <div class="sim">
+    <span class="label">Simulation</span>
+    <span class="week" id="weekLabel">Week 0</span>
+    <button class="btn" id="adv1">Advance 1 week</button>
+    <button class="btn" id="adv4">Advance 4 weeks</button>
+    <button class="btn" id="reset">Reset sample</button>
+    <span class="note">Each week, other lenders fund listings, circles meet and repay, and missed payments go to the circle, then the reserve.</span>
+  </div>
+
+  <section id="view-lend" role="tabpanel" aria-labelledby="tab-lend">
+    <div class="bar" style="margin-bottom:14px">
+      <div><h2>Circles raising now</h2><p class="muted" style="margin:4px 0 0">Lend from $25. You earn no interest; your principal comes back weekly as members repay.</p></div>
+      <div class="field" style="min-width:180px"><label for="filter">Show</label>
+        <select id="filter"><option value="open">Raising</option><option value="all">All circles</option><option value="repaying">Repaying</option></select></div>
+    </div>
+    <div class="grid" id="cards"></div>
+  </section>
+
+  <section id="view-portfolio" role="tabpanel" aria-labelledby="tab-portfolio" hidden>
+    <div class="stats" id="pfStats"></div>
+    <div class="panel" style="margin-top:20px">
+      <h3>Your loans</h3>
+      <div class="tablewrap"><table><thead><tr><th>Circle</th><th>Status</th><th class="r">Lent</th><th class="r">Repaid</th><th class="r">Lost</th><th style="min-width:140px">Progress</th></tr></thead><tbody id="pfRows"></tbody></table></div>
+    </div>
+  </section>
+
+  <section id="view-borrow" role="tabpanel" aria-labelledby="tab-borrow" hidden>
+    <div class="two">
+      <div class="panel">
+        <div><h2>Start a circle</h2><p class="muted" style="margin:4px 0 0">This is what a local agent fills in at the first meeting. Five members, no shared household, each with their own loan.</p></div>
+        <form id="circleForm" class="grid2" novalidate>
+          <div class="field"><label for="cName">Circle name</label><input id="cName" value="Kondele Traders"></div>
+          <div class="field"><label for="cTown">Town</label><select id="cTown"><option>Kisumu</option><option>Nakuru</option><option>Machakos</option><option>Thika</option><option>Eldoret</option><option>Kitengela</option></select></div>
+          <div class="field"><label for="cSector">Main trade</label><select id="cSector"><option>Retail and food</option><option>Tailoring and crafts</option><option>Agriculture</option><option>Services</option><option>Transport repair</option></select></div>
+          <div class="field"><label for="cCycle">Loan cycle</label><select id="cCycle"><option value="1">1st loan (new circle)</option><option value="2">2nd loan</option><option value="3">3rd loan</option><option value="4">4th loan</option></select></div>
+        </form>
+        <div style="display:grid;gap:10px" id="memberRows"></div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn primary" id="checkCircle">Check limits</button><button class="btn" id="listCircle" disabled>List on marketplace</button></div>
+      </div>
+      <div class="panel" id="limitPanel">
+        <h3>Limits and checks</h3>
+        <p class="muted" style="margin:0">Run "Check limits" to see each member's loan ceiling. The rules come from the business plan:</p>
+        <ul style="margin:0;padding-left:18px;display:grid;gap:4px;font-size:.9rem">
+          <li>First loans cap at $150, rising 30% per on-time cycle, up to $500.</li>
+          <li>Weekly installment can't exceed 25% of verified weekly mobile-money inflow.</li>
+          <li>Anyone with more than 2 active loans at the credit bureau is declined.</li>
+          <li>Flat 7% fee over 26 weekly installments.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section id="view-platform" role="tabpanel" aria-labelledby="tab-platform" hidden>
+    <div class="stats" id="plStats"></div>
+    <div class="two" style="margin-top:20px">
+      <div class="panel">
+        <h3>Unit economics calculator</h3>
+        <form class="grid2" id="ueForm" novalidate>
+          <div class="field"><label for="ueLoan">Loan size (USD)</label><input id="ueLoan" type="number" value="300" min="25" step="25"></div>
+          <div class="field"><label for="ueFee">Borrower fee %</label><input id="ueFee" type="number" value="7" step="0.5"></div>
+          <div class="field"><label for="ueTip">Lender tip %</label><input id="ueTip" type="number" value="5" step="0.5"></div>
+          <div class="field"><label for="ueMm">Mobile money %</label><input id="ueMm" type="number" value="2" step="0.25"></div>
+          <div class="field"><label for="ueFx">FX %</label><input id="ueFx" type="number" value="1" step="0.25"></div>
+          <div class="field"><label for="ueAgent">Agent $ per member</label><input id="ueAgent" type="number" value="9" step="1"></div>
+          <div class="field"><label for="ueRes">Reserve %</label><input id="ueRes" type="number" value="1.5" step="0.25"></div>
+          <div class="field"><label for="ueKyc">KYC $ per loan</label><input id="ueKyc" type="number" value="1" step="0.5"></div>
+          <div class="field"><label for="ueFixed">Yearly fixed costs ($M)</label><input id="ueFixed" type="number" value="3.5" step="0.1"></div>
+        </form>
+        <div id="ueOut"></div>
+      </div>
+      <div class="panel">
+        <h3>Activity this run</h3>
+        <div class="log" id="log"></div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<dialog id="dlg"><div class="dlg" id="dlgBody"></div></dialog>
+<div class="toast" id="toast" hidden></div>
+
+<script>
+(function(){
+const KES = 129; // approx. KES per USD
+const FEE = 0.07, WEEKS = 26, RESERVE_RATE = 0.015;
+const $ = s => document.querySelector(s);
+const usd = v => (v < 0 ? '−' : '') + '$' + Math.abs(v).toLocaleString('en-US', {minimumFractionDigits: Math.abs(v) < 1000 && v % 1 ? 2 : 0, maximumFractionDigits: 2});
+const usd0 = v => '$' + Math.round(v).toLocaleString('en-US');
+const pct = v => (v * 100).toFixed(1) + '%';
+const kes = v => 'KSh ' + Math.round(v * KES).toLocaleString('en-US');
+
+// Seeded random so a reset replays the same story
+let seed = 7;
+const rnd = () => { seed = (seed * 16807) % 2147483647; return (seed - 1) / 2147483646; };
+
+function weeklyAPR(fee, n){
+  const P = 1, inst = (1 + fee) / n; let lo = 0, hi = 0.2;
+  for (let k = 0; k < 80; k++){ const r = (lo + hi) / 2; let pv = 0; for (let t = 1; t <= n; t++) pv += inst / Math.pow(1 + r, t); if (pv > P) lo = r; else hi = r; }
+  return lo * 52;
+}
+
+function sample(){
+  const mk = (name, business, amount, risk) => ({name, business, amount, risk, paid: 0, arrears: 0, covered: 0});
+  return [
+    {id:'c1', name:'Mama Mboga Five', place:'Kisumu', sector:'Retail and food', cycle:3, score:'A', status:'raising', funded:180, week:0,
+      story:'Vegetable and fish sellers at Kibuye market who have met every Thursday for four years. Third loan: bulk buying before the December rush.',
+      members:[mk('Achieng O.','Vegetable stall',300,.02),mk('Atieno A.','Fish trader',280,.03),mk('Akinyi W.','Fruit and onions',260,.02),mk('Adhiambo K.','Cooked food kiosk',240,.03),mk('Awuor M.','Dry goods',250,.03)]},
+    {id:'c2', name:'Sindano Tailors', place:'Nakuru', sector:'Tailoring and crafts', cycle:1, score:'B', status:'raising', funded:325, week:0,
+      story:'Five tailors sharing a workshop near the bus park. First loan buys a second sewing machine and school-uniform fabric for January.',
+      members:[mk('Wanjiru N.','School uniforms',150,.05),mk('Njeri K.','Alterations',120,.05),mk('Wambui G.','Kitenge dresses',150,.04),mk('Nyambura M.','Beadwork',100,.06),mk('Muthoni J.','Curtains',140,.05)]},
+    {id:'c3', name:'Kiboko Poultry', place:'Machakos', sector:'Agriculture', cycle:2, score:'B', status:'raising', funded:90, week:0,
+      story:'Smallholders raising improved kienyeji chickens. Second loan covers chicks, feed and a shared incubator.',
+      members:[mk('Mutua K.','Layers',200,.05),mk('Mwende S.','Broilers',190,.06),mk('Kioko P.','Feed resale',180,.05),mk('Ndinda W.','Eggs',170,.04),mk('Musyoka D.','Chick brooding',190,.06)]},
+    {id:'c4', name:'Boda Fix Collective', place:'Thika', sector:'Transport repair', cycle:1, score:'C', status:'raising', funded:40, week:0,
+      story:'Motorbike mechanics and spare-parts sellers on the Thika road. First loan stocks fast-moving parts.',
+      members:[mk('Kamau P.','Spare parts',150,.08),mk('Mwangi T.','Tyre repair',130,.08),mk('Njoroge L.','Welding',150,.09),mk('Kariuki B.','Brake repair',120,.07),mk('Gitau F.','Oil and lubes',140,.08)]},
+    {id:'c5', name:'Kapsoya Dairy Goats', place:'Eldoret', sector:'Agriculture', cycle:2, score:'A', status:'repaying', funded:1015, week:9, mine:50,
+      story:'Women keeping dairy goats on small plots. Second loan, repaying on schedule.',
+      members:[mk('Chebet R.','Goat milk',220,.02),mk('Jepkosgei A.','Fodder',190,.03),mk('Kiprop E.','Goat breeding',210,.03),mk('Jeruto C.','Milk delivery',195,.02),mk('Cherono V.','Yoghurt',200,.03)]},
+    {id:'c6', name:'Mitumba Row', place:'Kitengela', sector:'Retail and food', cycle:1, score:'B', status:'repaying', funded:700, week:5, mine:25,
+      story:'Second-hand clothing sellers sharing one market lane. First loan, bought bales for the long rains season.',
+      members:[mk('Omondi J.','Jeans and jackets',150,.05),mk('Otieno S.','Shoes',140,.05),mk('Nekesa L.','Children\'s clothes',130,.04),mk('Wekesa D.','Bags',140,.06),mk('Naliaka R.','Bedsheets',140,.05)]}
+  ];
+}
+
+let S;
+function fresh(){
+  seed = 7;
+  const circles = sample();
+  circles.forEach(c => {
+    c.need = c.members.reduce((s, m) => s + m.amount, 0);
+    c.mine = c.mine || 0;
+    if (c.status === 'repaying'){
+      c.funded = c.need;
+      c.members.forEach(m => { m.paid = m.amount * (1 + FEE) / WEEKS * c.week; });
+    }
+  });
+  S = {week:0, wallet:425, circles, myRepaid:0, myLost:0, tipsGiven:0,
+       reserve:1800, platform:{lent:circles.filter(c=>c.status==='repaying').reduce((s,c)=>s+c.need,0), feeRevenue:0, tips:0, due:0, onTime:0, circleCovered:0, reserveCovered:0, losses:0},
+       log:[]};
+  // my repaid so far on seeded loans
+  circles.forEach(c => { if (c.status === 'repaying' && c.mine){ const back = c.mine * c.week / WEEKS; S.myRepaid += back; c.myBack = back; } else c.myBack = 0; c.myLost = 0; });
+  S.wallet += S.myRepaid;
+  addLog('Sample data loaded: 6 circles in Kenya, you have $75 out across 2 of them.');
+}
+
+function addLog(msg){ S.log.unshift({w:S.week, msg}); if (S.log.length > 80) S.log.pop(); }
+
+function toast(msg){ const t = $('#toast'); t.textContent = msg; t.hidden = false; clearTimeout(toast.h); toast.h = setTimeout(() => t.hidden = true, 2200); }
+
+// ---------- simulation ----------
+function step(){
+  S.week++;
+  S.circles.forEach(c => {
+    if (c.status === 'raising'){
+      const gap = c.need - c.funded;
+      const other = Math.min(gap, Math.round((80 + rnd() * 320) / 25) * 25);
+      c.funded += other;
+      if (c.funded >= c.need){ disburse(c); }
+      return;
+    }
+    if (c.status !== 'repaying') return;
+    c.week++;
+    let principalBack = 0;
+    c.members.forEach(m => {
+      const inst = m.amount * (1 + FEE) / WEEKS;
+      S.platform.due++;
+      const pays = rnd() > m.risk * 2.2;
+      if (pays){
+        m.paid += inst; S.platform.onTime++; principalBack += m.amount / WEEKS; S.platform.feeRevenue += m.amount * FEE / WEEKS;
+        if (m.arrears > 0 && rnd() < .5){ m.paid += m.arrears; principalBack += m.arrears / (1 + FEE); S.platform.feeRevenue += m.arrears - m.arrears / (1 + FEE); m.arrears = 0; }
+      } else if (rnd() < .6){
+        // circle steps in
+        m.paid += inst; m.covered += inst; S.platform.circleCovered++; principalBack += m.amount / WEEKS; S.platform.feeRevenue += m.amount * FEE / WEEKS;
+      } else {
+        m.arrears += inst;
+      }
+    });
+    payLenders(c, principalBack);
+    if (c.week >= WEEKS) close(c);
+  });
+  if (S.week % 4 === 0) relist();
+}
+
+function disburse(c){
+  c.status = 'repaying'; c.week = 0;
+  S.platform.lent += c.need;
+  S.reserve += c.need * RESERVE_RATE;
+  addLog(`${c.name} fully funded. ${usd0(c.need)} (${kes(c.need)}) sent to 5 members' mobile wallets.`);
+}
+
+function payLenders(c, principal){
+  if (!c.mine || principal <= 0) return;
+  const share = c.mine / c.need, back = principal * share;
+  c.myBack += back; S.myRepaid += back; S.wallet += back;
+}
+
+function close(c){
+  const arrearsPrincipal = c.members.reduce((s, m) => s + m.arrears / (1 + FEE), 0);
+  let lost = 0;
+  if (arrearsPrincipal > 0){
+    const fromReserve = Math.min(S.reserve, arrearsPrincipal);
+    S.reserve -= fromReserve; S.platform.reserveCovered += fromReserve;
+    lost = arrearsPrincipal - fromReserve; S.platform.losses += lost;
+    payLenders(c, fromReserve);
+    if (c.mine && lost > 0){ const myL = lost * c.mine / c.need; c.myLost += myL; S.myLost += myL; }
+    addLog(`${c.name} closed. Reserve covered ${usd(fromReserve)}${lost > 0 ? `, lenders lost ${usd(lost)}` : ''}.`);
+  } else {
+    addLog(`${c.name} repaid in full. Members can borrow about 30% more next cycle.`);
+  }
+  c.status = 'complete';
+}
+
+const NEW = [
+  {name:'Juakali Welders', place:'Nakuru', sector:'Services', score:'B', story:'Metal workers making gates and window grills. First loan buys steel in bulk.', names:[['Kiprotich S.','Gates'],['Langat P.','Window grills'],['Rotich M.','Tools'],['Kirui E.','Welding rods'],['Too J.','Roofing']]},
+  {name:'Salon Lane', place:'Kisumu', sector:'Services', score:'A', story:'Hairdressers sharing one row of kiosks. First loan for dryers and stock.', names:[['Anyango B.','Braiding'],['Auma C.','Wigs'],['Akoth D.','Dryers'],['Apondi F.','Nail care'],['Awino G.','Hair products']]},
+  {name:'Shamba Seedlings', place:'Machakos', sector:'Agriculture', score:'B', story:'A tree and vegetable nursery group. First loan for seed trays and a water tank.', names:[['Mumbua K.','Mango seedlings'],['Kaluki N.','Tomato seedlings'],['Mwikali R.','Avocado grafts'],['Nthenya T.','Kale seedlings'],['Wayua V.','Water sales']]}
+];
+let newIdx = 0;
+function relist(){
+  if (newIdx >= NEW.length) return;
+  const t = NEW[newIdx++];
+  const members = t.names.map(([n, b]) => ({name:n, business:b, amount:Math.round((110 + rnd() * 40) / 5) * 5, risk:t.score === 'A' ? .03 : .05, paid:0, arrears:0, covered:0}));
+  const c = {id:'n' + newIdx, name:t.name, place:t.place, sector:t.sector, cycle:1, score:t.score, status:'raising', funded:0, week:0, story:t.story, members, mine:0, myBack:0, myLost:0};
+  c.need = members.reduce((s, m) => s + m.amount, 0);
+  S.circles.unshift(c);
+  addLog(`New listing: ${c.name} in ${c.place} is raising ${usd0(c.need)}.`);
+}
+
+// ---------- lending ----------
+function lend(id, amt){
+  const c = S.circles.find(x => x.id === id);
+  if (!c || c.status !== 'raising') return;
+  const gap = c.need - c.funded;
+  const a = Math.min(amt, gap);
+  if (a <= 0) return toast('This circle is already fully funded.');
+  if (a > S.wallet) return toast(`Your balance is ${usd(S.wallet)}. Lend a smaller amount.`);
+  S.wallet -= a; c.funded += a; c.mine += a;
+  const tip = Math.round(a * 0.05 * 100) / 100; S.tipsGiven += tip; S.platform.tips += tip;
+  addLog(`You lent ${usd0(a)} to ${c.name} and tipped ${usd(tip)}.`);
+  toast(`Lent ${usd0(a)} to ${c.name}`);
+  if (c.funded >= c.need) disburse(c);
+  render();
+}
+
+// ---------- rendering ----------
+function circleState(c){
+  const late = c.members.filter(m => m.arrears > 0).length;
+  if (c.status === 'raising') return {label:'Raising', cls:'c'};
+  if (c.status === 'complete') return {label:'Complete', cls:'a'};
+  return late ? {label:`${late} late`, cls:'late'} : {label:'On schedule', cls:'a'};
+}
+
+function card(c){
+  const st = circleState(c);
+  const funded = Math.min(1, c.funded / c.need);
+  const repaid = c.members.reduce((s, m) => s + m.paid, 0) / (c.need * (1 + FEE));
+  const dots = c.members.map(m => `<span class="dot ${c.status === 'raising' ? 'pending' : m.arrears > 0 ? 'late' : ''}" title="${m.name}"></span>`).join('');
+  const body = c.status === 'raising'
+    ? `<div class="row"><span><span class="num">${usd0(c.funded)}</span> of <span class="num">${usd0(c.need)}</span></span><span class="muted num">${usd0(c.need - c.funded)} to go</span></div>
+       <div class="progress sun"><span style="width:${funded * 100}%"></span></div>
+       <div class="fund" aria-label="Lend to ${c.name}">${[25, 50, 100].map(a => `<button class="btn" data-lend="${c.id}" data-amt="${a}" ${a > S.wallet ? 'disabled' : ''}>Lend $${a}</button>`).join('')}</div>`
+    : `<div class="row"><span>Repaid <span class="num">${pct(Math.min(1, repaid))}</span></span><span class="muted num">week ${Math.min(c.week, WEEKS)} of ${WEEKS}</span></div>
+       <div class="progress"><span style="width:${Math.min(1, repaid) * 100}%"></span></div>`;
+  return `<article class="card">
+    <div class="card-head"><div><h3>${c.name}</h3><div class="place">${c.place}, Kenya · ${c.sector}</div></div><span class="score" title="Circle score">${c.score}</span></div>
+    <div class="chips"><span class="chip ${st.cls}">${st.label}</span><span class="chip">Loan ${ordinal(c.cycle)}</span>${c.mine ? `<span class="chip a">You: ${usd0(c.mine)}</span>` : ''}</div>
+    <p style="margin:0;font-size:.9rem">${c.story}</p>
+    <div class="row"><span class="dots" aria-label="Member status">${dots}</span><button class="link" data-open="${c.id}">See members</button></div>
+    ${body}
+  </article>`;
+}
+const ordinal = n => n + (['th','st','nd','rd'][n] || 'th');
+
+function renderLend(){
+  const f = $('#filter').value;
+  const list = S.circles.filter(c => f === 'all' ? true : f === 'open' ? c.status === 'raising' : c.status === 'repaying');
+  $('#cards').innerHTML = list.length ? list.map(card).join('') : `<div class="panel"><h3>Nothing here right now</h3><p class="muted" style="margin:0">Every listed circle is funded. Advance a few weeks and new circles will list, or start one yourself under "Start a circle".</p></div>`;
+}
+
+function renderPortfolio(){
+  const mine = S.circles.filter(c => c.mine);
+  const out = mine.reduce((s, c) => s + (c.status === 'raising' ? c.mine : c.status === 'repaying' ? c.mine - c.myBack : 0), 0);
+  const lent = mine.reduce((s, c) => s + c.mine, 0);
+  $('#pfStats').innerHTML = [
+    ['Available to lend', usd(S.wallet), 'Repayments land here weekly'],
+    ['Lent in total', usd0(lent), `${mine.length} circles`],
+    ['Still outstanding', usd(out), 'Raising or repaying'],
+    ['Repaid to you', usd(S.myRepaid), 'Principal only, 0% interest'],
+    ['Lost', usd(S.myLost), 'After circle and reserve cover'],
+    ['Tips you gave', usd(S.tipsGiven), 'Funds the platform']
+  ].map(([l, v, s]) => `<div class="stat"><div class="label">${l}</div><div class="v">${v}</div><div class="s">${s}</div></div>`).join('');
+  $('#pfRows').innerHTML = mine.length ? mine.map(c => {
+    const st = circleState(c); const prog = c.status === 'raising' ? c.funded / c.need : c.myBack / c.mine;
+    return `<tr><td><button class="link" data-open="${c.id}">${c.name}</button><div class="muted" style="font-size:.8rem">${c.place}</div></td><td><span class="chip ${st.cls}">${st.label}</span></td><td class="r num">${usd0(c.mine)}</td><td class="r num">${usd(c.myBack)}</td><td class="r num">${usd(c.myLost)}</td><td><div class="progress ${c.status === 'raising' ? 'sun' : ''}"><span style="width:${Math.min(1, prog) * 100}%"></span></div></td></tr>`;
+  }).join('') : `<tr><td colspan="6" class="muted">You haven't lent yet. Pick a circle under "Lend".</td></tr>`;
+}
+
+function renderPlatform(){
+  const p = S.platform;
+  const rate = p.due ? (p.onTime + p.circleCovered) / p.due : 1;
+  const active = S.circles.filter(c => c.status === 'repaying');
+  const outstanding = active.reduce((s, c) => s + c.members.reduce((t, m) => t + Math.max(0, m.amount * (1 + FEE) - m.paid), 0), 0);
+  const atRisk = active.reduce((s, c) => s + c.members.filter(m => m.arrears > 0).reduce((t, m) => t + Math.max(0, m.amount * (1 + FEE) - m.paid), 0), 0);
+  $('#plStats').innerHTML = [
+    ['Disbursed', usd0(p.lent), `${S.circles.filter(c => c.status !== 'raising').length} circles`],
+    ['On-time rate', pct(rate), `${p.circleCovered} payments covered by circles`],
+    ['Portfolio at risk', pct(outstanding ? atRisk / outstanding : 0), 'Share owed by members in arrears'],
+    ['Reserve balance', usd0(S.reserve), `${usd0(p.reserveCovered)} paid out so far`],
+    ['Lender losses', usd(p.losses), 'Beyond the reserve'],
+    ['Fee and tip revenue', usd0(p.feeRevenue + p.tips), `Tips ${usd0(p.tips)}`]
+  ].map(([l, v, s]) => `<div class="stat"><div class="label">${l}</div><div class="v">${v}</div><div class="s">${s}</div></div>`).join('');
+  $('#log').innerHTML = S.log.map(e => `<div><span class="num">W${e.w}</span><span>${e.msg}</span></div>`).join('');
+  renderUE();
+}
+
+function renderUE(){
+  const v = id => parseFloat($(id).value) || 0;
+  const L = Math.max(1, v('#ueLoan')), fee = v('#ueFee') / 100, tip = v('#ueTip') / 100;
+  const rev = L * (fee + tip);
+  const cost = L * (v('#ueMm') + v('#ueFx') + v('#ueRes')) / 100 + v('#ueAgent') + v('#ueKyc');
+  const contrib = rev - cost, rate = contrib / L;
+  const fixed = v('#ueFixed') * 1e6;
+  const be = rate > 0 ? fixed / rate : null;
+  const apr = weeklyAPR(fee, WEEKS);
+  $('#ueOut').innerHTML = `<div class="tablewrap"><table><tbody>
+    <tr><td>Revenue per loan</td><td class="r num">${usd(rev)}</td></tr>
+    <tr><td>Variable costs per loan</td><td class="r num">${usd(-cost)}</td></tr>
+    <tr><td><strong>Contribution</strong></td><td class="r num"><strong>${usd(contrib)}</strong> (${pct(rate)})</td></tr>
+    <tr><td>Borrower APR (26 weekly installments)</td><td class="r num">${pct(apr)}</td></tr>
+    <tr><td>Yearly loan volume to break even</td><td class="r num">${be ? '$' + (be / 1e6).toFixed(1) + 'M' : 'Never: contribution is negative'}</td></tr>
+    </tbody></table></div>
+    <p class="note" style="margin:0">Agent and KYC costs are per member loan, so small loans carry them as a larger share. Try a $150 loan to see the effect.</p>`;
+}
+
+function renderTop(){
+  $('#walletTop').textContent = usd(S.wallet);
+  $('#weekLabel').textContent = `Week ${S.week}`;
+}
+
+let tab = 'lend';
+function render(){
+  renderTop();
+  if (tab === 'lend') renderLend();
+  if (tab === 'portfolio') renderPortfolio();
+  if (tab === 'platform') renderPlatform();
+}
+
+function openCircle(id){
+  const c = S.circles.find(x => x.id === id); if (!c) return;
+  const rows = c.members.map(m => {
+    const inst = m.amount * (1 + FEE) / WEEKS;
+    const status = c.status === 'raising' ? 'Waiting for funding' : m.arrears > 0 ? `Behind ${usd(m.arrears)}` : m.covered > 0 ? `On time (circle covered ${usd(m.covered)})` : 'On time';
+    return `<tr><td>${m.name}<div class="muted" style="font-size:.8rem">${m.business}</div></td><td class="r num">${usd0(m.amount)}<div class="muted" style="font-size:.8rem">${kes(m.amount)}</div></td><td class="r num">${usd(inst)}</td><td class="r num">${usd(m.paid)}</td><td>${status}</td></tr>`;
+  }).join('');
+  $('#dlgBody').innerHTML = `<div class="card-head"><div><h2>${c.name}</h2><div class="place">${c.place}, Kenya · ${c.sector} · ${ordinal(c.cycle)} loan</div></div><button class="btn" id="dlgClose">Close</button></div>
+    <p style="margin:0">${c.story}</p>
+    <div class="tablewrap"><table><thead><tr><th>Member</th><th class="r">Loan</th><th class="r">Weekly</th><th class="r">Paid</th><th>Status</th></tr></thead><tbody>${rows}</tbody></table></div>
+    <p class="note" style="margin:0">Flat 7% fee, 26 weekly payments at the circle meeting, about ${pct(weeklyAPR(FEE, WEEKS))} APR. Amounts in KSh at about ${KES} per dollar. Members are fictional sample borrowers.</p>`;
+  const d = $('#dlg'); d.showModal(); $('#dlgClose').onclick = () => d.close();
+}
+
+// ---------- borrower form ----------
+const SAMPLE_MEMBERS = [['Okoth J.','Clean cookstoves','6500','1'],['Anyango P.','Phone accessories','9000','0'],['Odhiambo T.','Shoe repair','4800','2'],['Auma L.','Tea kiosk','5200','1'],['Ochieng V.','Fish smoking','7000','3']];
+function renderMembers(){
+  $('#memberRows').innerHTML = `<div class="label">Members · weekly inflow is in KSh from the mobile-money statement</div>` + SAMPLE_MEMBERS.map((m, i) => `
+    <div class="member-row">
+      <div class="field"><label for="mN${i}">Name</label><input id="mN${i}" value="${m[0]}"></div>
+      <div class="field"><label for="mB${i}">Business</label><input id="mB${i}" value="${m[1]}"></div>
+      <div class="field"><label for="mI${i}">Weekly inflow (KSh)</label><input id="mI${i}" type="number" min="0" value="${m[2]}"></div>
+      <div class="field"><label for="mL${i}">Active loans</label><input id="mL${i}" type="number" min="0" value="${m[3]}"></div>
+    </div>`).join('');
+}
+
+let checked = null;
+function checkCircle(){
+  const cycle = +$('#cCycle').value;
+  const cycleCap = Math.min(500, Math.round(150 * Math.pow(1.3, cycle - 1)));
+  const res = SAMPLE_MEMBERS.map((_, i) => {
+    const name = $('#mN' + i).value.trim() || `Member ${i + 1}`;
+    const inflowUsd = (parseFloat($('#mI' + i).value) || 0) / KES;
+    const loans = parseInt($('#mL' + i).value, 10) || 0;
+    const affordCap = Math.floor(inflowUsd * 0.25 * WEEKS / (1 + FEE) / 5) * 5;
+    if (loans > 2) return {name, ok:false, why:`${loans} active loans; the limit is 2`};
+    const amt = Math.min(cycleCap, affordCap);
+    if (amt < 50) return {name, ok:false, why:'Weekly inflow supports less than $50'};
+    return {name, ok:true, amt, why: amt < cycleCap ? `Limited by inflow (cap ${usd0(cycleCap)})` : `Cycle cap ${usd0(cycleCap)}`, business:$('#mB' + i).value};
+  });
+  const okCount = res.filter(r => r.ok).length;
+  const total = res.filter(r => r.ok).reduce((s, r) => s + r.amt, 0);
+  const enough = okCount >= 4;
+  checked = enough ? {res, total, cycle} : null;
+  $('#listCircle').disabled = !enough;
+  $('#limitPanel').innerHTML = `<h3>Limits and checks</h3>
+    <div class="tablewrap"><table><thead><tr><th>Member</th><th class="r">Max loan</th><th>Reason</th></tr></thead><tbody>
+    ${res.map(r => `<tr><td>${r.name}</td><td class="r num">${r.ok ? usd0(r.amt) + `<div class="muted" style="font-size:.8rem">${kes(r.amt)}</div>` : '—'}</td><td>${r.ok ? r.why : `<span class="chip late">Declined</span> ${r.why}`}</td></tr>`).join('')}
+    </tbody></table></div>
+    <div class="verdict ${enough ? 'ok' : 'no'}">${enough
+      ? `${okCount} of 5 members qualify for ${usd0(total)} in total (${kes(total)}). Weekly payment for the circle: ${usd(total * (1 + FEE) / WEEKS)}.`
+      : `Only ${okCount} of 5 members qualify. A circle needs at least 4; replace the declined members and check again.`}</div>`;
+}
+
+function listCircle(){
+  if (!checked) return;
+  const members = checked.res.filter(r => r.ok).map(r => ({name:r.name, business:r.business || 'Small business', amount:r.amt, risk:.05, paid:0, arrears:0, covered:0}));
+  const c = {id:'u' + Date.now(), name:$('#cName').value.trim() || 'New circle', place:$('#cTown').value, sector:$('#cSector').value, cycle:checked.cycle, score:'B', status:'raising', funded:0, week:0,
+    story:'Listed from the agent form in this prototype.', members, need:checked.total, mine:0, myBack:0, myLost:0};
+  S.circles.unshift(c);
+  addLog(`${c.name} listed in ${c.place}, raising ${usd0(c.need)}.`);
+  checked = null; $('#listCircle').disabled = true;
+  setTab('lend'); $('#filter').value = 'open'; render();
+  toast(`${c.name} is now raising ${usd0(c.need)}`);
+}
+
+// ---------- wiring ----------
+function setTab(t){
+  tab = t;
+  document.querySelectorAll('nav button').forEach(b => b.setAttribute('aria-selected', b.dataset.tab === t));
+  ['lend','portfolio','borrow','platform'].forEach(k => $('#view-' + k).hidden = k !== t);
+  render();
+}
+document.querySelector('nav').addEventListener('click', e => { const b = e.target.closest('button[data-tab]'); if (b) setTab(b.dataset.tab); });
+document.addEventListener('click', e => {
+  const l = e.target.closest('[data-lend]'); if (l) return lend(l.dataset.lend, +l.dataset.amt);
+  const o = e.target.closest('[data-open]'); if (o) return openCircle(o.dataset.open);
+});
+$('#filter').addEventListener('change', renderLend);
+$('#adv1').onclick = () => { step(); render(); };
+$('#adv4').onclick = () => { for (let i = 0; i < 4; i++) step(); render(); toast(`Now at week ${S.week}`); };
+$('#reset').onclick = () => { newIdx = 0; fresh(); render(); toast('Sample data reset'); };
+$('#checkCircle').onclick = checkCircle;
+$('#listCircle').onclick = listCircle;
+$('#ueForm').addEventListener('input', renderUE);
+$('#circleForm').addEventListener('submit', e => e.preventDefault());
+
+fresh(); renderMembers(); render();
+})();
+</script>
