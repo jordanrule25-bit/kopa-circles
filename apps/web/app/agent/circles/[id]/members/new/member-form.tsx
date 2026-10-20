@@ -1,9 +1,12 @@
 "use client";
 
 import type { LimitDecision } from "@kopa/core";
-import { useActionState, useEffect, useState, useTransition } from "react";
+import Link from "next/link";
+import { useActionState, useEffect, useRef, useState, useTransition } from "react";
 import { ActionBar } from "@/components/agent-ui";
+import { ConnectionBanner } from "@/components/offline";
 import { Alert, Button } from "@/components/ui";
+import { queueMember } from "@/lib/offline-queue";
 import type { FormState } from "../../../../actions";
 
 const usd = (c: number) => `$${(c / 100).toLocaleString("en-US")}`;
@@ -22,16 +25,37 @@ function Section({ title, children }: { title: string; children: React.ReactNode
   );
 }
 
+type State = FormState & { queued?: boolean };
+
 export function MemberForm({
   action,
   preview,
   slot,
+  circleId,
 }: {
   action: (s: FormState, f: FormData) => Promise<FormState>;
   preview: (inflowKes: number, loans: number) => Promise<LimitDecision | null>;
   slot: number;
+  circleId: string;
 }) {
-  const [state, formAction, pending] = useActionState(action, {});
+  // Without signal the member is saved on the phone instead, and sent later.
+  const [state, formAction, pending] = useActionState<State, FormData>(async (prev, form) => {
+    if (!navigator.onLine) {
+      queueMember(circleId, form);
+      return { queued: true };
+    }
+    try {
+      return await action(prev, form);
+    } catch (e) {
+      if (e instanceof TypeError || !navigator.onLine) {
+        queueMember(circleId, form);
+        return { queued: true };
+      }
+      throw e;
+    }
+  }, {});
+  const formRef = useRef<HTMLFormElement>(null);
+  const [offlinePreview, setOfflinePreview] = useState(false);
   const [inflow, setInflow] = useState("");
   const [loans, setLoans] = useState("0");
   const [decision, setDecision] = useState<LimitDecision | null>(null);
@@ -45,12 +69,37 @@ export function MemberForm({
       setDecision(null);
       return;
     }
-    const t = setTimeout(() => startPreview(async () => setDecision(await preview(i, l))), 350);
+    const t = setTimeout(
+      () =>
+        startPreview(async () => {
+          try {
+            setDecision(await preview(i, l));
+            setOfflinePreview(false);
+          } catch {
+            setDecision(null);
+            setOfflinePreview(true);
+          }
+        }),
+      350,
+    );
     return () => clearTimeout(t);
   }, [inflow, loans, preview]);
 
+  if (state.queued) {
+    return (
+      <div className="grid gap-4 rounded-card bg-surface p-6 text-center shadow-card" role="status">
+        <h2 className="text-2xl font-semibold">Saved on this phone</h2>
+        <p className="text-muted">There’s no signal, so this member is stored here and will be sent automatically when you’re back online.</p>
+        <Link href={`/agent/circles/${circleId}`} className="rounded-full bg-accent py-3 font-medium text-accent-ink">
+          Back to the circle
+        </Link>
+      </div>
+    );
+  }
+
   return (
-    <form action={formAction} className="grid gap-5">
+    <form ref={formRef} action={formAction} className="grid gap-5">
+      <ConnectionBanner />
       <Section title="Who">
         <label className="field">
           <span>Name</span>
@@ -106,6 +155,7 @@ export function MemberForm({
               </div>
             </div>
           )}
+          {offlinePreview && <p className="text-sm text-muted">The limit will be checked when you’re back online.</p>}
           {decision?.status === "DECLINED" && (
             <div className="rounded-xl bg-bad-soft p-4 text-bad">
               <div className="font-medium">Won’t qualify</div>

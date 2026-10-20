@@ -63,19 +63,21 @@ const memberSchema = z.object({
   consent: z.literal("on", { message: "The member must consent before they can be added." }),
 });
 
-export async function addMember(circleId: string, _prev: FormState, formData: FormData): Promise<FormState> {
-  const circle = await ownCircle(circleId);
-  if (circle.status !== "FORMING") return { error: "Members can only be added while the circle is forming." };
+type CreateResult = { memberId: string } | { error: string; code?: "SAME_CIRCLE" | "INVALID" | "CLOSED" };
 
-  const parsed = memberSchema.safeParse(Object.fromEntries(formData));
-  if (!parsed.success) return { error: firstIssue(parsed.error) };
+const MAX_QUEUE_AGE_MS = 30 * 86_400_000;
+
+/** Shared by the online form and the offline queue. `capturedAt` is when consent was recorded. */
+async function createMember(circleId: string, fields: Record<string, unknown>, capturedAt: Date): Promise<CreateResult> {
+  const circle = await ownCircle(circleId);
+  if (circle.status !== "FORMING") return { error: "Members can only be added while the circle is forming.", code: "CLOSED" };
+
+  const parsed = memberSchema.safeParse(fields);
+  if (!parsed.success) return { error: firstIssue(parsed.error), code: "INVALID" };
   const d = parsed.data;
 
   const phoneHash = hashPii("phone", d.phone);
   const nationalIdHash = hashPii("nationalId", d.nationalId);
-
-  const members = await prisma.member.findMany({ where: { circleId } });
-  if (members.length >= CIRCLE_SIZE) return { error: `A circle has ${CIRCLE_SIZE} members.` };
 
   // One circle at a time per person.
   const elsewhere = await prisma.member.findFirst({
@@ -86,15 +88,14 @@ export async function addMember(circleId: string, _prev: FormState, formData: Fo
     include: { circle: true },
   });
   if (elsewhere) {
-    return {
-      error:
-        elsewhere.circleId === circleId
-          ? "This phone number or national ID is already in this circle."
-          : `This person is already in an active circle (${elsewhere.circle.name}).`,
-    };
+    return elsewhere.circleId === circleId
+      ? { error: "This phone number or national ID is already in this circle.", code: "SAME_CIRCLE" }
+      : { error: `This person is already in an active circle (${elsewhere.circle.name}).` };
   }
 
-  const now = new Date();
+  const count = await prisma.member.count({ where: { circleId } });
+  if (count >= CIRCLE_SIZE) return { error: `A circle has ${CIRCLE_SIZE} members.`, code: "CLOSED" };
+
   const member = await prisma.member.create({
     data: {
       circleId,
@@ -102,19 +103,49 @@ export async function addMember(circleId: string, _prev: FormState, formData: Fo
       business: d.business,
       phoneHash,
       nationalIdHash,
-      consentAt: now,
+      consentAt: capturedAt,
       scoreInputs: {
         create: {
           source: "AGENT",
           weeklyInflowKesCents: d.weeklyInflowKes * 100,
           activeLoans: d.activeLoans,
-          capturedAt: now,
+          capturedAt,
         },
       },
     },
   });
   revalidatePath(`/agent/circles/${circleId}`);
-  redirect(`/agent/circles/${circleId}?added=${member.id}`);
+  return { memberId: member.id };
+}
+
+export async function addMember(circleId: string, _prev: FormState, formData: FormData): Promise<FormState> {
+  const r = await createMember(circleId, Object.fromEntries(formData), new Date());
+  if ("error" in r) return { error: r.error };
+  redirect(`/agent/circles/${circleId}?added=${r.memberId}`);
+}
+
+export type QueuedResult = { ok: true } | { ok: false; error: string };
+
+/**
+ * Sends a member an agent saved while offline. A retry after a lost response
+ * finds the person already in this circle, which counts as success.
+ */
+export async function addQueuedMember(circleId: string, fields: Record<string, string>, capturedAtIso: string): Promise<QueuedResult> {
+  const capturedAt = new Date(capturedAtIso);
+  const now = Date.now();
+  if (Number.isNaN(capturedAt.getTime()) || capturedAt.getTime() > now + 60_000 || now - capturedAt.getTime() > MAX_QUEUE_AGE_MS) {
+    return { ok: false, error: "This entry is too old to send. Add the member again." };
+  }
+  let r: CreateResult;
+  try {
+    r = await createMember(circleId, fields, capturedAt);
+  } catch (e) {
+    // Saved on a shared phone by another agent, or the circle was removed.
+    if (e instanceof Error && e.message === "Circle not found") return { ok: false, error: "This entry is for a circle you can't add members to." };
+    throw e;
+  }
+  if ("memberId" in r || r.code === "SAME_CIRCLE") return { ok: true };
+  return { ok: false, error: r.error };
 }
 
 /** Live limit preview while the agent types. The math stays in @kopa/core. */

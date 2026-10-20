@@ -3,6 +3,7 @@ import { prisma } from "@kopa/db";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ActionBar, MemberSlots, Steps } from "@/components/agent-ui";
+import { ConnectionBanner, PendingMembers } from "@/components/offline";
 import { GrowthStage, Leaf } from "@/components/plants";
 import { Alert, Back, Chip, Note } from "@/components/ui";
 import { CIRCLE_SIZE, MIN_QUALIFYING } from "@/lib/circle-rules";
@@ -61,6 +62,8 @@ export default async function CirclePage({ params, searchParams }: { params: Pro
           </div>
         </div>
       </div>
+
+      <ConnectionBanner />
 
       {justAdded && forming && (
         <Alert tone="good">
@@ -127,6 +130,11 @@ export default async function CirclePage({ params, searchParams }: { params: Pro
               </li>
             );
           })}
+          {forming && (
+            <li className="contents">
+              <PendingMembers circleId={circle.id} />
+            </li>
+          )}
           {forming &&
             Array.from({ length: CIRCLE_SIZE - circle.members.length }, (_, i) => (
               <li key={`empty-${i}`} className="rounded-card border-2 border-dashed border-line p-4 text-center text-muted">

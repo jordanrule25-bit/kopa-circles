@@ -1,5 +1,6 @@
 import { prisma } from "@kopa/db";
 import Link from "next/link";
+import { ConnectionBanner, OfflineSync } from "@/components/offline";
 import { GrowthStage } from "@/components/plants";
 import { ButtonLink, Chip, Empty, PageHead } from "@/components/ui";
 import { STATUS_LABEL } from "@/lib/format";
@@ -15,6 +16,8 @@ export default async function AgentHome() {
 
   return (
     <div className="agent mx-auto grid w-full max-w-xl gap-6">
+      <OfflineSync />
+      <ConnectionBanner />
       <PageHead
         title="My circles"
         sub={`${agent.town} · ${agent.partner.name}`}

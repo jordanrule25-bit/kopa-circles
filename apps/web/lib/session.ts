@@ -3,6 +3,8 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 
 export const SESSION_COOKIE = "kopa_session";
+/** Set at sign-out so the next page clears pages cached for offline use. */
+export const CLEAR_PAGES_COOKIE = "kopa_clear_pages";
 export const SESSION_MAX_AGE = 30 * 24 * 60 * 60;
 
 export const sessionCookie = (value: string) => ({

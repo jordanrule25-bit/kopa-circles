@@ -4,8 +4,6 @@ import { Note, PageHead, Panel } from "@/components/ui";
 import { date } from "@/lib/format";
 import { devLoginEnabled } from "@/lib/session";
 
-export const metadata = { title: "Dev outbox" };
-
 // Development only: emails and texts that would have been sent.
 export default async function Outbox() {
   if (!devLoginEnabled()) notFound();

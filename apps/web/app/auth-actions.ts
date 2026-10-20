@@ -4,7 +4,7 @@ import { AuthError, createSession, messengerFromEnv, prisma, requestEmailLink, r
 import { cookies, headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { normalizeKenyanPhone } from "@/lib/pii";
-import { SESSION_COOKIE, safeNext, sessionCookie } from "@/lib/session";
+import { CLEAR_PAGES_COOKIE, SESSION_COOKIE, safeNext, sessionCookie } from "@/lib/session";
 
 export type AuthState = { error?: string; phone?: string; sent?: boolean };
 
@@ -58,5 +58,7 @@ export async function signOut() {
   const jar = await cookies();
   await revokeSession(prisma, jar.get(SESSION_COOKIE)?.value);
   jar.delete(SESSION_COOKIE);
+  // One-time marker: the next page clears pages cached for offline use on this device.
+  jar.set({ name: CLEAR_PAGES_COOKIE, value: "1", path: "/", sameSite: "lax", maxAge: 300 });
   redirect("/");
 }

@@ -27,7 +27,7 @@ export default async function NewMember({ params }: { params: Promise<{ id: stri
           <MemberSlots filled={circle._count.members} />
         </div>
       </div>
-      <MemberForm action={addMember.bind(null, id)} preview={previewLimit.bind(null, id)} slot={slot} />
+      <MemberForm action={addMember.bind(null, id)} preview={previewLimit.bind(null, id)} slot={slot} circleId={id} />
     </div>
   );
 }

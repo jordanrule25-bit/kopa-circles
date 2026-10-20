@@ -25,4 +25,8 @@ export default tseslint.config(
     },
     settings: { next: { rootDir: "apps/web" } },
   },
+  {
+    files: ["apps/web/public/sw.js"],
+    languageOptions: { globals: { ...globals.serviceworker } },
+  },
 );

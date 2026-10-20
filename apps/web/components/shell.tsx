@@ -4,8 +4,10 @@ import type { ReactNode } from "react";
 import { signOut } from "@/app/auth-actions";
 import { switchDevUser } from "@/app/dev-user";
 import { usd } from "@/lib/format";
-import { currentUser, devLoginEnabled } from "@/lib/session";
+import { cookies } from "next/headers";
+import { CLEAR_PAGES_COOKIE, currentUser, devLoginEnabled } from "@/lib/session";
 import { NavTabs } from "./nav-tabs";
+import { ClearOfflinePages } from "./offline";
 import { Leaf } from "./plants";
 
 const TABS: Record<string, Array<{ href: string; label: string }>> = {
@@ -36,6 +38,7 @@ const PUBLIC_TABS = [
 
 export async function Shell({ children }: { children: ReactNode }) {
   const dev = devLoginEnabled();
+  const clearPages = (await cookies()).has(CLEAR_PAGES_COOKIE);
   const [user, users] = await Promise.all([
     currentUser(),
     dev ? prisma.user.findMany({ where: { id: { startsWith: "sample-" } }, orderBy: [{ role: "asc" }, { id: "asc" }] }) : Promise.resolve([]),
@@ -74,9 +77,12 @@ export async function Shell({ children }: { children: ReactNode }) {
                 <button className="rounded-full px-2 py-1 font-medium text-accent hover:underline">Sign out</button>
               </form>
             ) : (
+              <>
+              {clearPages && <ClearOfflinePages />}
               <Link href="/signin" className="rounded-full bg-accent px-4 py-1.5 text-sm font-medium text-accent-ink hover:brightness-110">
                 Sign in
               </Link>
+              </>
             )}
           </div>
         </div>
