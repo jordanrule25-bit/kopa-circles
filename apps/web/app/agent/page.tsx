@@ -14,7 +14,7 @@ export default async function AgentHome() {
   });
 
   return (
-    <>
+    <div className="agent mx-auto grid w-full max-w-xl gap-6">
       <PageHead
         title="My circles"
         sub={`${agent.town} · ${agent.partner.name}`}
@@ -46,6 +46,6 @@ export default async function AgentHome() {
           ))}
         </ul>
       )}
-    </>
+    </div>
   );
 }

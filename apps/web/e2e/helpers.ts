@@ -9,6 +9,7 @@ export async function signInAs(page: Page, userId: "sample-admin" | "sample-lend
 export const run = () => String(Math.floor(100_000 + Math.random() * 900_000));
 
 export async function addMember(page: Page, phone: string, nationalId: string, [name, business, inflow, loans]: readonly string[]) {
+  await page.getByRole("link", { name: /^Add member \d of 5$/ }).click();
   await page.getByLabel("Name", { exact: true }).fill(name!);
   await page.getByLabel("Business", { exact: true }).fill(business!);
   await page.getByLabel("Mobile number").fill(phone);
@@ -17,7 +18,7 @@ export async function addMember(page: Page, phone: string, nationalId: string, [
   await page.getByLabel("Active loans at the credit bureau").fill(loans!);
   await page.getByRole("checkbox").check();
   await page.getByRole("button", { name: "Add member" }).click();
-  await page.getByRole("cell", { name }).waitFor();
+  await page.getByRole("listitem", { name }).waitFor();
 }
 
 // prototype SAMPLE_MEMBERS: name, business, weekly inflow (KSh), active bureau loans
@@ -40,5 +41,5 @@ export async function formCircle(page: Page, name: string, tag: string) {
   for (const [i, m] of MEMBERS.entries()) await addMember(page, `07${tag}${i}0`, `8${tag}${i}`, m);
   await page.getByRole("button", { name: "Submit for listing" }).click();
   await page.getByTestId("circle-status").getByText("Waiting for approval").waitFor();
-  return page.url().split("/").pop()!;
+  return new URL(page.url()).pathname.split("/").pop()!;
 }

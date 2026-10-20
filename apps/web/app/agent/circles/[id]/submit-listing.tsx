@@ -9,11 +9,9 @@ export function SubmitListing({ action, disabled }: { action: (s: FormState) => 
   return (
     <form action={formAction} className="grid gap-2">
       {state.error && <Alert>{state.error}</Alert>}
-      <div>
-        <Button variant="primary" disabled={disabled || pending}>
-          {pending ? "Submitting…" : "Submit for listing"}
-        </Button>
-      </div>
+      <Button variant="primary" disabled={disabled || pending} className="w-full py-3.5 text-[17px]">
+        {pending ? "Submitting…" : "Submit for listing"}
+      </Button>
     </form>
   );
 }

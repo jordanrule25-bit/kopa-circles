@@ -1,6 +1,6 @@
 "use server";
 
-import { MIN_LOAN_USD_CENTS } from "@kopa/core";
+import { memberLimit, MIN_LOAN_USD_CENTS, type LimitDecision } from "@kopa/core";
 import { prisma, type Prisma } from "@kopa/db";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
@@ -95,7 +95,7 @@ export async function addMember(circleId: string, _prev: FormState, formData: Fo
   }
 
   const now = new Date();
-  await prisma.member.create({
+  const member = await prisma.member.create({
     data: {
       circleId,
       name: d.name,
@@ -114,7 +114,14 @@ export async function addMember(circleId: string, _prev: FormState, formData: Fo
     },
   });
   revalidatePath(`/agent/circles/${circleId}`);
-  return { ok: true };
+  redirect(`/agent/circles/${circleId}?added=${member.id}`);
+}
+
+/** Live limit preview while the agent types. The math stays in @kopa/core. */
+export async function previewLimit(circleId: string, weeklyInflowKes: number, activeLoans: number): Promise<LimitDecision | null> {
+  const circle = await ownCircle(circleId);
+  if (![weeklyInflowKes, activeLoans].every((v) => Number.isInteger(v) && v >= 0 && v <= 10_000_000)) return null;
+  return memberLimit(circle.cycle, weeklyInflowKes * 100, activeLoans, currentFx());
 }
 
 export async function removeMember(circleId: string, memberId: string) {

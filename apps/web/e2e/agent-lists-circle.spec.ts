@@ -18,17 +18,23 @@ test("agent forms a circle, sees limits and submits it for listing", async ({ pa
   await expect(page.getByRole("heading", { name: circleName })).toBeVisible();
   await expect(page.getByTestId("circle-status")).toHaveText("Forming");
 
+  // The limit shows while the agent types, before the member is saved.
+  await page.getByRole("link", { name: "Add member 1 of 5" }).click();
+  await page.getByLabel("Weekly inflow (KSh)").fill("2000");
+  await expect(page.getByTestId("limit-preview")).toContainText("$90");
+  await page.getByRole("link", { name: `‹ ${circleName}` }).click();
+
   for (const [i, m] of MEMBERS.entries()) await addMember(page, `07${tag}0${i}`, `9${tag}${i}`, m);
 
   // Ochieng has 3 bureau loans; the other four get the $150 first-loan cap.
-  await expect(page.getByRole("row", { name: /Ochieng V\./ })).toContainText("Declined");
-  await expect(page.getByRole("row", { name: /Okoth J\./ })).toContainText("$150 · KSh 19,350");
+  await expect(page.getByRole("listitem", { name: "Ochieng V." })).toContainText("Declined");
+  await expect(page.getByRole("listitem", { name: "Okoth J." })).toContainText("$150 · KSh 19,350");
   await expect(page.getByTestId("verdict")).toContainText("4 of 5 members qualify for KSh 77,400 in total");
 
   await page.getByRole("button", { name: "Submit for listing" }).click();
   await expect(page.getByTestId("circle-status")).toHaveText("Waiting for approval");
   await expect(page.getByText("4 loans listed for KSh 77,400")).toBeVisible();
-  await expect(page.getByRole("row", { name: /Ochieng V\./ })).toContainText("did not qualify");
+  await expect(page.getByRole("listitem", { name: "Ochieng V." })).toContainText("did not qualify");
 });
 
 test("a person can't join two active circles", async ({ page }) => {
@@ -42,6 +48,7 @@ test("a person can't join two active circles", async ({ page }) => {
       await addMember(page, `07${tag}50`, `7${tag}5`, ["Akinyi D.", "Tailoring", "6000", "0"]);
     }
   }
+  await page.getByRole("link", { name: /^Add member \d of 5$/ }).click();
   await page.getByLabel("Name", { exact: true }).fill("Akinyi D.");
   await page.getByLabel("Business", { exact: true }).fill("Tailoring");
   await page.getByLabel("Mobile number").fill(`07${tag}50`);

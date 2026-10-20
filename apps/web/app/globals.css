@@ -76,3 +76,9 @@ table.data th { font-size: 0.8rem; color: var(--muted); font-weight: 500; }
 table.data .r { text-align: right; }
 table.data tbody tr:last-child td { border-bottom: 0; }
 @media (prefers-reduced-motion: no-preference) { .progress-fill { transition: width 0.5s cubic-bezier(0.2, 0.8, 0.2, 1); } }
+
+/* Agent screens are used one-handed on Android phones: big targets, and 17px
+   inputs so mobile browsers don't zoom in on focus. */
+.agent .field input, .agent .field select, .agent .field textarea { min-height: 52px; font-size: 17px; border-radius: 14px; padding: 12px 14px; }
+.agent .field > span { font-size: 0.9rem; }
+.safe-bottom { padding-bottom: max(12px, env(safe-area-inset-bottom)); }
