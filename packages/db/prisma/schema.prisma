@@ -58,6 +58,7 @@ enum LedgerEventKind {
   LOAN_LISTED
   LENDER_DEPOSIT
   LENDER_FUNDED
+  TIP
   DISBURSEMENT
   RESERVE_IN
   REPAYMENT
@@ -84,6 +85,7 @@ enum ScoreSource {
 
 model User {
   id        String   @id @default(cuid())
+  name      String?
   email     String?  @unique
   phone     String?  @unique
   role      Role
@@ -138,6 +140,7 @@ model Circle {
   score     CircleScore  @default(B)
   status    CircleStatus @default(FORMING)
   story     String
+  approvedAt DateTime?
   createdAt DateTime     @default(now())
 
   members      Member[]
@@ -168,6 +171,8 @@ model Loan {
   circleId          String
   circle            Circle     @relation(fields: [circleId], references: [id])
   principalKesCents Int
+  /// Amount lenders are asked to fund, fixed in USD at listing time.
+  listedUsdCents    Int        @default(0)
   feeBps            Int        @default(700)
   weeks             Int        @default(26)
   status            LoanStatus @default(LISTED)

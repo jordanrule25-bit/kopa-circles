@@ -61,9 +61,9 @@ async function main() {
   ]);
 
   const users: Prisma.UserCreateManyInput[] = [
-    { id: "sample-admin", email: "admin@example.com", role: "ADMIN" },
-    { id: DEMO_LENDER, email: "demo.lender@example.com", role: "LENDER" },
-    { id: POOLED_LENDER, email: "other.lenders@example.com", role: "LENDER" },
+    { id: "sample-admin", name: "Sample Admin", email: "admin@example.com", role: "ADMIN" },
+    { id: DEMO_LENDER, name: "Demo Lender", email: "demo.lender@example.com", role: "LENDER" },
+    { id: POOLED_LENDER, name: "Other lenders (pooled)", email: "other.lenders@example.com", role: "LENDER" },
   ];
   const agents: Prisma.AgentCreateManyInput[] = [];
   const circles: Prisma.CircleCreateManyInput[] = [];
@@ -93,7 +93,7 @@ async function main() {
     const circleId = `sample-${c.key}`;
     const agentId = `sample-agent-${c.town.toLowerCase()}`;
     if (!agents.some((a) => a.userId === agentId)) {
-      users.push({ id: agentId, phone: `+2547000000${String(ci).padStart(2, "0")}`, role: "AGENT" });
+      users.push({ id: agentId, name: `Agent ${c.town}`, phone: `+2547000000${String(ci).padStart(2, "0")}`, role: "AGENT" });
       agents.push({ userId: agentId, town: c.town, partnerId: PARTNER_ID });
     }
 
@@ -151,6 +151,7 @@ async function main() {
         memberId,
         circleId,
         principalKesCents,
+        listedUsdCents: m.amountUsd * 100,
         status: repaying ? "REPAYING" : "LISTED",
         disbursedAt,
       });

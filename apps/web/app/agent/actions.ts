@@ -159,7 +159,13 @@ export async function submitForListing(circleId: string, _prev: FormState): Prom
 
     for (const { member, decision } of approved) {
       const loan = await tx.loan.create({
-        data: { memberId: member.id, circleId, principalKesCents: decision.amountKesCents, status: "LISTED" },
+        data: {
+          memberId: member.id,
+          circleId,
+          principalKesCents: decision.amountKesCents,
+          listedUsdCents: decision.amountUsdCents,
+          status: "LISTED",
+        },
       });
       const meta: Prisma.InputJsonValue = {
         amountUsdCents: decision.amountUsdCents,

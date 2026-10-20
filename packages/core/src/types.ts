@@ -39,6 +39,7 @@ export type LedgerEventKind =
   | "LOAN_LISTED"
   | "LENDER_DEPOSIT"
   | "LENDER_FUNDED"
+  | "TIP"
   | "DISBURSEMENT"
   | "RESERVE_IN"
   | "REPAYMENT"
