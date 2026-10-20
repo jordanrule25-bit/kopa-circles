@@ -164,7 +164,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ s
           ))}
         </ol>
         <Link href="/platform" className="text-lg font-medium text-accent hover:underline">
-          See every number on the platform report ›
+          See every number in the transparency report ›
         </Link>
       </section>
 

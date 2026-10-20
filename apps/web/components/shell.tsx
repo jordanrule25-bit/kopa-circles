@@ -11,7 +11,7 @@ const TABS: Record<string, Array<{ href: string; label: string }>> = {
   LENDER: [
     { href: "/", label: "Lend" },
     { href: "/portfolio", label: "Portfolio" },
-    { href: "/platform", label: "Platform" },
+    { href: "/platform", label: "Report" },
   ],
   AGENT: [
     { href: "/agent", label: "My circles" },
@@ -22,7 +22,7 @@ const TABS: Record<string, Array<{ href: string; label: string }>> = {
     { href: "/admin/listings", label: "Listings" },
     { href: "/admin/repaying", label: "Repaying" },
     { href: "/admin/reserve", label: "Reserve" },
-    { href: "/platform", label: "Platform" },
+    { href: "/platform", label: "Report" },
     { href: "/", label: "Lend" },
   ],
 };
