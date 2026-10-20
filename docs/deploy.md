@@ -9,11 +9,14 @@ applies any new database migrations before the app goes live.
 
 ## 1. Database: Neon
 
-1. Sign up at https://neon.tech and create a project (region: closest to Kenya,
-   e.g. AWS eu-central-1 Frankfurt).
-2. On the project dashboard, copy two connection strings:
-   - **Pooled** (host contains `-pooler`) → `DATABASE_URL`
-   - **Direct** (no `-pooler`) → `DIRECT_URL`
+The project is already linked (`neon.ts`, `.neon`). `neon env pull` writes its
+connection strings to `.env.local`:
+
+- **Pooled** (host contains `-pooler`) → `DATABASE_URL`, used by the app
+- **Direct** (no `-pooler`) → `DATABASE_URL_UNPOOLED`, used by migrations
+
+Keep `.env` pointed at local Docker: tests and `pnpm db:seed` wipe whatever
+database `.env` names. Use `.env.local` only when you mean to touch Neon.
 
 ## 2. Email: Resend
 
@@ -39,7 +42,7 @@ applies any new database migrations before the app goes live.
    | Name | Value |
    | --- | --- |
    | `DATABASE_URL` | Neon pooled connection string |
-   | `DIRECT_URL` | Neon direct connection string |
+   | `DATABASE_URL_UNPOOLED` | Neon direct connection string |
    | `AUTH_SECRET` | output of `openssl rand -base64 48` |
    | `PII_HASH_SALT` | output of `openssl rand -base64 48`; **never change it** after real members are added, or duplicate checks stop working |
    | `APP_URL` | your Vercel address, e.g. `https://kopa-circles.vercel.app` |
@@ -57,7 +60,7 @@ From your computer, with the Neon **direct** URL:
 
 ```sh
 cd packages/db
-DATABASE_URL="<direct url>" DIRECT_URL="<direct url>" pnpm create-admin:prod you@example.com "Your Name"
+DATABASE_URL="<direct url>" DATABASE_URL_UNPOOLED="<direct url>" pnpm create-admin:prod you@example.com "Your Name"
 ```
 
 Sign in at `<APP_URL>/signin` with that email. Then add field agents under
@@ -69,7 +72,7 @@ Only for a demo database, never for the real pilot. It deletes everything first:
 
 ```sh
 cd packages/db
-DATABASE_URL="<direct url>" DIRECT_URL="<direct url>" pnpm exec tsx src/seed.ts
+DATABASE_URL="<direct url>" DATABASE_URL_UNPOOLED="<direct url>" pnpm exec tsx src/seed.ts
 ```
 
 Then run the first-admin step again, since seeding replaces all users.

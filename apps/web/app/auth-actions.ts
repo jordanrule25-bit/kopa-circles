@@ -12,7 +12,7 @@ async function baseUrl() {
   const h = await headers();
   const host = h.get("x-forwarded-host") ?? h.get("host") ?? "localhost:3000";
   const proto = h.get("x-forwarded-proto") ?? (host.startsWith("localhost") ? "http" : "https");
-  return process.env.APP_URL ?? `${proto}://${host}`;
+  return process.env.APP_URL || `${proto}://${host}`; // empty counts as unset
 }
 
 export async function requestLink(_prev: AuthState, formData: FormData): Promise<AuthState> {
