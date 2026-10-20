@@ -15,3 +15,20 @@ cd kopa-circles
 claude
 ```
 Then paste the contents of `docs/first-session.md`.
+
+## Develop
+
+Needs Node 20+, pnpm 10 and Docker (for local Postgres).
+
+```sh
+pnpm install
+cp .env.example .env
+pnpm db:up          # Postgres in docker-compose
+pnpm db:migrate
+pnpm db:seed        # six fictional sample circles from the prototype
+pnpm dev            # http://localhost:3000
+```
+
+Checks: `pnpm lint`, `pnpm typecheck`, `pnpm test` (Vitest), `pnpm test:e2e` (Playwright;
+run `pnpm --filter web exec playwright install chromium` once first). CI runs lint,
+typecheck and test on every push.

@@ -7,7 +7,15 @@
   },
   "scripts": {
     "dev": "turbo run dev --filter=web",
-    "build": "turbo run build"
+    "build": "turbo run build",
+    "lint": "turbo run lint",
+    "typecheck": "turbo run typecheck",
+    "test": "turbo run test",
+    "test:e2e": "pnpm --filter web test:e2e",
+    "db:up": "docker compose up -d --wait",
+    "db:generate": "pnpm --filter @kopa/db db:generate",
+    "db:migrate": "pnpm --filter @kopa/db migrate",
+    "db:seed": "pnpm --filter @kopa/db seed"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.0",
@@ -19,6 +27,13 @@
     "typescript-eslint": "^8.46.0"
   },
   "pnpm": {
-    "onlyBuiltDependencies": ["@prisma/client", "@prisma/engines", "prisma", "esbuild", "sharp", "@tailwindcss/oxide"]
+    "onlyBuiltDependencies": [
+      "@prisma/client",
+      "@prisma/engines",
+      "prisma",
+      "esbuild",
+      "sharp",
+      "@tailwindcss/oxide"
+    ]
   }
 }
