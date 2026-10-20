@@ -32,12 +32,18 @@ async function resendEmail(apiKey: string, from: string, to: string, subject: st
 
 async function africasTalkingSms(username: string, apiKey: string, to: string, text: string, from?: string) {
   const body = new URLSearchParams({ username, to, message: text, ...(from ? { from } : {}) });
-  const res = await fetch("https://api.africastalking.com/version1/messaging", {
+  // The free sandbox account ("sandbox") has its own endpoint; texts show in its simulator.
+  const host = username === "sandbox" ? "api.sandbox.africastalking.com" : "api.africastalking.com";
+  const res = await fetch(`https://${host}/version1/messaging`, {
     method: "POST",
     headers: { apiKey, accept: "application/json", "content-type": "application/x-www-form-urlencoded" },
     body,
   });
   if (!res.ok) throw new Error(`SMS failed: ${res.status} ${await res.text()}`);
+  // A 201 can still report per-recipient failure (bad number, no credit).
+  const reply = (await res.json().catch(() => null)) as { SMSMessageData?: { Recipients?: { status: string }[] } } | null;
+  const recipient = reply?.SMSMessageData?.Recipients?.[0];
+  if (!recipient || recipient.status !== "Success") throw new Error(`SMS not accepted: ${recipient?.status ?? "no recipient in response"}`);
 }
 
 /**
