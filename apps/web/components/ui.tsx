@@ -33,7 +33,7 @@ export function Score({ score }: { score: string }) {
   );
 }
 
-export function Progress({ value, tone = "good", label }: { value: number; tone?: "good" | "sun"; label?: string }) {
+export function Progress({ value, tone = "good", label = "Progress" }: { value: number; tone?: "good" | "sun"; label?: string }) {
   const pct = Math.max(0, Math.min(1, value)) * 100;
   return (
     <div className="h-1.5 overflow-hidden rounded-full bg-surface-2" role="progressbar" aria-valuenow={Math.round(pct)} aria-valuemin={0} aria-valuemax={100} aria-label={label}>

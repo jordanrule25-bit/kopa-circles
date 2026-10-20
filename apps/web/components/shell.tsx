@@ -37,6 +37,12 @@ export async function Shell({ children }: { children: ReactNode }) {
 
   return (
     <>
+      <a
+        href="#main"
+        className="sr-only z-50 rounded-full bg-fg px-4 py-2 text-bg focus:not-sr-only focus:fixed focus:left-4 focus:top-3"
+      >
+        Skip to content
+      </a>
       <header className="sticky top-0 z-10 border-b border-line/70 bg-glass backdrop-blur-xl backdrop-saturate-150">
         <div className="mx-auto flex max-w-[1080px] flex-wrap items-center gap-x-8 gap-y-1 px-5 py-2.5">
           <Link href="/" className="flex items-center gap-2">
@@ -70,7 +76,7 @@ export async function Shell({ children }: { children: ReactNode }) {
           </div>
         </div>
       </header>
-      <main className="mx-auto grid max-w-[1080px] gap-8 px-5 pb-20 pt-10">{children}</main>
+      <main id="main" tabIndex={-1} className="mx-auto grid max-w-[1080px] gap-8 px-5 pb-20 pt-10 outline-none">{children}</main>
       <footer className="border-t border-line">
         <div className="mx-auto flex max-w-[1080px] flex-wrap justify-between gap-2 px-5 py-6 text-xs text-muted">
           <span>Kopa Circles · Pilot</span>

@@ -11,6 +11,9 @@ import { currentFx } from "@/lib/fx";
 import { currentUser } from "@/lib/session";
 import { circleTimeline } from "@/lib/timeline";
 
+/** Updates shown before "Show earlier updates". */
+const SHOWN = 6;
+
 const TONE = { good: "var(--accent)", sun: "var(--sun)", bad: "var(--bad)", neutral: "var(--line)" };
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }) {
@@ -102,11 +105,11 @@ export default async function CirclePublic({ params }: { params: Promise<{ id: s
           <Panel>
             <h2 className="text-xl font-semibold">Updates</h2>
             <ol className="relative grid gap-0" aria-label="Circle updates, newest first">
-              {timeline.map((t, i) => (
+              {timeline.slice(0, SHOWN).map((t, i) => (
                 <li key={i} className="relative flex gap-4 pb-5 last:pb-0">
                   <div className="flex flex-col items-center">
                     <span className="mt-1.5 h-3 w-3 flex-none rounded-full" style={{ background: TONE[t.tone] }} />
-                    {i < timeline.length - 1 && <span className="mt-1 w-px flex-1 bg-line" />}
+                    {i < Math.min(SHOWN, timeline.length) - 1 && <span className="mt-1 w-px flex-1 bg-line" />}
                   </div>
                   <div className="min-w-0">
                     <div className="flex flex-wrap items-baseline gap-x-2">
@@ -118,6 +121,25 @@ export default async function CirclePublic({ params }: { params: Promise<{ id: s
                 </li>
               ))}
             </ol>
+            {timeline.length > SHOWN && (
+              <details className="group">
+                <summary className="cursor-pointer list-none font-medium text-accent [&::-webkit-details-marker]:hidden">
+                  <span className="group-open:hidden">Show {timeline.length - SHOWN} earlier updates</span>
+                  <span className="hidden group-open:inline">Hide earlier updates</span>
+                </summary>
+                <ol className="mt-4 grid gap-3" aria-label="Earlier updates">
+                  {timeline.slice(SHOWN).map((t, i) => (
+                    <li key={i} className="flex gap-4">
+                      <span className="mt-1.5 h-3 w-3 flex-none rounded-full" style={{ background: TONE[t.tone] }} />
+                      <div>
+                        <span className="font-medium">{t.title}</span> <span className="text-sm text-muted">{date(t.at)}</span>
+                        {t.detail && <div className="text-sm text-muted">{t.detail}</div>}
+                      </div>
+                    </li>
+                  ))}
+                </ol>
+              </details>
+            )}
           </Panel>
         </div>
 
