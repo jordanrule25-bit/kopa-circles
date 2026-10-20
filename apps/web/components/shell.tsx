@@ -18,7 +18,8 @@ const TABS: Record<string, Array<{ href: string; label: string }>> = {
     { href: "/", label: "Lend" },
   ],
   ADMIN: [
-    { href: "/admin", label: "Listings" },
+    { href: "/admin", label: "Today" },
+    { href: "/admin/listings", label: "Listings" },
     { href: "/admin/repaying", label: "Repaying" },
     { href: "/admin/reserve", label: "Reserve" },
     { href: "/platform", label: "Platform" },

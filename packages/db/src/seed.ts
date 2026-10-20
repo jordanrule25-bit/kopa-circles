@@ -164,15 +164,25 @@ async function main() {
       ledger.push(toLedger({ kind: "RESERVE_IN", loanId, circleId, amountMinor: reserveIn, currency: "KES", meta: {} }, disbursedAt));
       reserveEvents.push({ kind: "IN", amountKesCents: reserveIn, loanId, at: disbursedAt });
 
-      // Every sample member has paid every installment so far, on its due date.
+      // Sample members pay each installment on its due date, except where the
+      // sample says they missed a week or the circle covered half for them.
       let state: InstallmentState[] = scheduleFor(loan, disbursedAt).map((i) => ({ ...i, paidKesCents: 0, coveredByCircleKesCents: 0 }));
       for (let w = 1; w <= c.week; w++) {
+        if (m.missedWeeks?.includes(w)) continue;
         const due = state[w - 1]!;
-        const r = applyPayment(loan, state, due.amountKesCents, "MEMBER");
-        state = r.installments;
-        for (const e of r.events) {
-          ledger.push(toLedger(e, due.dueOn));
-          principalByWeek[w]! += e.meta.principalKesCents as number;
+        const owed = due.amountKesCents - due.paidKesCents;
+        const circlePart = m.halfCoveredWeeks?.includes(w) ? Math.floor(owed / 2 / 100) * 100 : 0;
+        for (const [amount, payer] of [
+          [owed - circlePart, "MEMBER"],
+          [circlePart, "CIRCLE"],
+        ] as const) {
+          if (amount === 0) continue;
+          const r = applyPayment(loan, state, amount, payer);
+          state = r.installments;
+          for (const e of r.events) {
+            ledger.push(toLedger(e, due.dueOn));
+            principalByWeek[w]! += e.meta.principalKesCents as number;
+          }
         }
       }
       for (const i of state) {

@@ -5,6 +5,10 @@ export interface SampleMember {
   name: string;
   business: string;
   amountUsd: number;
+  /** Weeks this member paid nothing (repaying circles only). */
+  missedWeeks?: number[];
+  /** Weeks the rest of the circle covered half of this member's payment. */
+  halfCoveredWeeks?: number[];
 }
 
 export interface SampleCircle {
@@ -25,7 +29,7 @@ export interface SampleCircle {
   members: SampleMember[];
 }
 
-const m = (name: string, business: string, amountUsd: number): SampleMember => ({ name, business, amountUsd });
+const m = (name: string, business: string, amountUsd: number, extra: Partial<SampleMember> = {}): SampleMember => ({ name, business, amountUsd, ...extra });
 
 export const SAMPLE_KES_PER_USD = 129;
 /** Starting reserve in the prototype, before this sample's own disbursals. */
@@ -68,6 +72,6 @@ export const SAMPLE_CIRCLES: SampleCircle[] = [
     key: "c6", name: "Mitumba Row", town: "Kitengela", sector: "Retail and food", cycle: 1, score: "B",
     status: "REPAYING", fundedUsd: 0, week: 5, demoLenderUsd: 25,
     story: "Second-hand clothing sellers sharing one market lane. First loan, bought bales for the long rains season.",
-    members: [m("Omondi J.", "Jeans and jackets", 150), m("Otieno S.", "Shoes", 140), m("Nekesa L.", "Children's clothes", 130), m("Wekesa D.", "Bags", 140), m("Naliaka R.", "Bedsheets", 140)],
+    members: [m("Omondi J.", "Jeans and jackets", 150), m("Otieno S.", "Shoes", 140, { halfCoveredWeeks: [3] }), m("Nekesa L.", "Children's clothes", 130), m("Wekesa D.", "Bags", 140, { missedWeeks: [5] }), m("Naliaka R.", "Bedsheets", 140)],
   },
 ];

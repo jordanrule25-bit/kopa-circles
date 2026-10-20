@@ -8,7 +8,7 @@ test("lender lends $25 to a raising circle", async ({ page }) => {
   const circleId = await formCircle(page, name, tag);
 
   await signInAs(page, "sample-admin");
-  await page.goto("/admin");
+  await page.goto("/admin/listings");
   await page.getByTestId(`review-${circleId}`).getByRole("button", { name: "Approve listing" }).click();
   await expect(page.getByTestId(`raising-${circleId}`)).toBeVisible();
 

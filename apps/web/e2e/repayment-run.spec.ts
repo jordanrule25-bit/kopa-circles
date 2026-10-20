@@ -9,7 +9,7 @@ test("admin disburses and records a weekly meeting", async ({ page }) => {
   const circleId = await formCircle(page, name, tag);
 
   await signInAs(page, "sample-admin");
-  await page.goto("/admin");
+  await page.goto("/admin/listings");
   await page.getByTestId(`review-${circleId}`).getByRole("button", { name: "Approve listing" }).click();
 
   const raising = page.getByTestId(`raising-${circleId}`);
