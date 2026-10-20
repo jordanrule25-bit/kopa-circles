@@ -55,6 +55,7 @@ enum Currency {
 
 enum LedgerEventKind {
   LOAN_LISTED
+  LENDER_DEPOSIT
   LENDER_FUNDED
   DISBURSEMENT
   RESERVE_IN

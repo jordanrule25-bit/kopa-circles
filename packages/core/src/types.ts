@@ -37,6 +37,7 @@ export type Payer = "MEMBER" | "CIRCLE";
 /** Mirrors the LedgerEventKind enum in packages/db/prisma/schema.prisma. */
 export type LedgerEventKind =
   | "LOAN_LISTED"
+  | "LENDER_DEPOSIT"
   | "LENDER_FUNDED"
   | "DISBURSEMENT"
   | "RESERVE_IN"
