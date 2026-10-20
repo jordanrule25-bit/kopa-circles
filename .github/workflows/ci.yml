@@ -7,6 +7,21 @@ on:
 jobs:
   check:
     runs-on: ubuntu-latest
+    services:
+      # Same database as docker-compose.yml, for the packages/db integration tests.
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: kopa
+          POSTGRES_PASSWORD: kopa
+          POSTGRES_DB: kopa
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U kopa"
+          --health-interval 2s
+          --health-timeout 3s
+          --health-retries 15
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
@@ -15,7 +30,9 @@ jobs:
           node-version: 22
           cache: pnpm
       - run: pnpm install --frozen-lockfile
+      - run: cp .env.example .env
       - run: pnpm db:generate
+      - run: pnpm --filter @kopa/db migrate:deploy
       - run: pnpm lint
       - run: pnpm typecheck
       - run: pnpm test
