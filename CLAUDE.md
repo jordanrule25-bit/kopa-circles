@@ -47,5 +47,6 @@ why; `prototype/index.html` is a clickable reference for the UX and the loan mat
     pnpm test:e2e      # playwright
     pnpm db:migrate    # prisma migrate dev
     pnpm db:seed       # loads fictional sample circles
+    pnpm --filter @kopa/db create-admin you@example.com "Name"   # first admin
 
 (Create these scripts in Milestone 0 if they don't exist yet.)

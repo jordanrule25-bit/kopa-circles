@@ -51,6 +51,11 @@ export function CircleCard({ c, s, mineCents, balanceCents }: { c: CircleFull; s
             <span className="num text-muted">{usd0(Math.max(0, s.targetCents - s.fundedCents))} to go</span>
           </div>
           <Progress value={s.targetCents ? s.fundedCents / s.targetCents : 0} tone="sun" label="Funded" />
+          {balanceCents === null && (
+            <Link href={`/circles/${c.id}`} className="text-sm font-medium text-accent hover:underline">
+              Lend to {c.name} ›
+            </Link>
+          )}
           {balanceCents !== null && (
             <LendForm compact action={lendToCircle.bind(null, c.id)} remainingCents={Math.max(0, s.targetCents - s.fundedCents)} balanceCents={balanceCents} circleName={c.name} />
           )}

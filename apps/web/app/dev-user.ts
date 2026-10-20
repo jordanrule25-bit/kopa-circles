@@ -1,13 +1,18 @@
 "use server";
 
+import { createSession, prisma, revokeSession } from "@kopa/db";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
-import { DEV_USER_COOKIE } from "@/lib/session";
+import { devLoginEnabled, HOME, SESSION_COOKIE, sessionCookie } from "@/lib/session";
 
-const HOME: Record<string, string> = { LENDER: "/", AGENT: "/agent", ADMIN: "/admin", PARTNER: "/" };
-
+/** Development only: switch to any seeded account without a code. */
 export async function switchDevUser(formData: FormData) {
-  const [id, role] = String(formData.get("user") ?? "").split("|");
-  (await cookies()).set(DEV_USER_COOKIE, id ?? "", { httpOnly: true, sameSite: "lax", path: "/" });
-  redirect(HOME[role ?? ""] ?? "/");
+  if (!devLoginEnabled()) throw new Error("Dev login is disabled.");
+  const id = String(formData.get("user") ?? "");
+  const user = await prisma.user.findUnique({ where: { id } });
+  if (!user) throw new Error("No such user.");
+  const jar = await cookies();
+  await revokeSession(prisma, jar.get(SESSION_COOKIE)?.value);
+  jar.set(sessionCookie(await createSession(prisma, user.id, { userAgent: "dev switcher" })));
+  redirect(HOME[user.role] ?? "/");
 }

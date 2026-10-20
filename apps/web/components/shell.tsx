@@ -1,9 +1,10 @@
 import { prisma } from "@kopa/db";
 import Link from "next/link";
 import type { ReactNode } from "react";
+import { signOut } from "@/app/auth-actions";
 import { switchDevUser } from "@/app/dev-user";
 import { usd } from "@/lib/format";
-import { currentUser } from "@/lib/session";
+import { currentUser, devLoginEnabled } from "@/lib/session";
 import { NavTabs } from "./nav-tabs";
 import { Leaf } from "./plants";
 
@@ -22,18 +23,24 @@ const TABS: Record<string, Array<{ href: string; label: string }>> = {
     { href: "/admin/listings", label: "Listings" },
     { href: "/admin/repaying", label: "Repaying" },
     { href: "/admin/reserve", label: "Reserve" },
+    { href: "/admin/agents", label: "Agents" },
     { href: "/platform", label: "Report" },
     { href: "/", label: "Lend" },
   ],
 };
 
+const PUBLIC_TABS = [
+  { href: "/", label: "Lend" },
+  { href: "/platform", label: "Report" },
+];
+
 export async function Shell({ children }: { children: ReactNode }) {
+  const dev = devLoginEnabled();
   const [user, users] = await Promise.all([
     currentUser(),
-    prisma.user.findMany({ where: { role: { in: ["LENDER", "AGENT", "ADMIN"] } }, orderBy: [{ role: "asc" }, { id: "asc" }], include: { agent: true } }),
+    dev ? prisma.user.findMany({ where: { id: { startsWith: "sample-" } }, orderBy: [{ role: "asc" }, { id: "asc" }] }) : Promise.resolve([]),
   ]);
-  const role = user?.role ?? "LENDER";
-  const tabs = TABS[role] ?? TABS.LENDER!;
+  const tabs = user ? (TABS[user.role] ?? TABS.LENDER!) : PUBLIC_TABS;
 
   return (
     <>
@@ -59,23 +66,44 @@ export async function Shell({ children }: { children: ReactNode }) {
                 </span>
               </span>
             )}
-            <form action={switchDevUser} className="flex items-center gap-1.5 text-sm">
-              <label htmlFor="dev-user" className="sr-only">
-                Dev login
-              </label>
-              <select id="dev-user" name="user" defaultValue={user ? `${user.id}|${user.role}` : ""} className="max-w-[240px] rounded-full bg-surface-2 px-3 py-1 text-sm">
-                {users.map((u) => (
-                  <option key={u.id} value={`${u.id}|${u.role}`}>
-                    {u.name ?? u.email ?? u.id}
-                    {u.role === "AGENT" ? "" : ` (${u.role.toLowerCase()})`}
-                  </option>
-                ))}
-              </select>
-              <button className="rounded-full px-2 py-1 text-sm font-medium text-accent hover:underline">Switch</button>
-            </form>
+            {user ? (
+              <form action={signOut} className="flex items-center gap-2 text-sm">
+                <span className="hidden max-w-[160px] truncate text-muted sm:inline" title={user.email ?? user.phone ?? ""}>
+                  {user.name ?? user.email ?? user.phone}
+                </span>
+                <button className="rounded-full px-2 py-1 font-medium text-accent hover:underline">Sign out</button>
+              </form>
+            ) : (
+              <Link href="/signin" className="rounded-full bg-accent px-4 py-1.5 text-sm font-medium text-accent-ink hover:brightness-110">
+                Sign in
+              </Link>
+            )}
           </div>
         </div>
       </header>
+      {dev && (
+        <form action={switchDevUser} className="mx-auto flex max-w-[1080px] flex-wrap items-center justify-end gap-2 px-5 pt-3 text-xs text-muted">
+          <span>Dev login</span>
+          <label htmlFor="dev-user" className="sr-only">
+            Switch account
+          </label>
+          <select id="dev-user" name="user" defaultValue={user?.id ?? ""} className="rounded-full bg-surface-2 px-3 py-1 text-xs text-fg">
+            <option value="" disabled>
+              Choose an account
+            </option>
+            {users.map((u) => (
+              <option key={u.id} value={u.id}>
+                {u.name ?? u.email ?? u.id}
+                {u.role === "AGENT" ? "" : ` (${u.role.toLowerCase()})`}
+              </option>
+            ))}
+          </select>
+          <button className="rounded-full px-2 py-1 font-medium text-accent hover:underline">Switch</button>
+          <Link href="/dev/outbox" className="font-medium text-accent hover:underline">
+            Outbox
+          </Link>
+        </form>
+      )}
       <main id="main" tabIndex={-1} className="mx-auto grid max-w-[1080px] gap-8 px-5 pb-20 pt-10 outline-none">{children}</main>
       <footer className="border-t border-line">
         <div className="mx-auto flex max-w-[1080px] flex-wrap justify-between gap-2 px-5 py-6 text-xs text-muted">

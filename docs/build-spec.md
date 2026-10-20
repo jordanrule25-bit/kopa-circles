@@ -13,7 +13,7 @@ is a suggested order.
 | Web app (lenders + admin) | Next.js 15 App Router, TypeScript, Tailwind | Server actions for writes, RSC for lists |
 | Agent app (field agents) | Same Next.js app, `/agent` routes, mobile-first PWA | Agents use Android phones; a PWA avoids app-store delay. Native later if needed. |
 | Database | Postgres (Supabase or Neon) + Prisma | Row-level security later for partner access |
-| Auth | Auth.js: email magic link for lenders, phone OTP for agents | Borrowers don't log in during the pilot; agents act for them |
+| Auth | In-house passwordless sign-in (see decision below): email link for lenders and admins, SMS code for agents | Borrowers don't log in during the pilot; agents act for them |
 | Payments (lenders) | Stripe Checkout, USD | Donation-style flow, tips as a second line item |
 | Payments (borrowers) | `PaymentRail` interface → `MockRail` now, `MpesaRail` (Safaricom Daraja B2C/C2B via the licensed partner) at Milestone 3 | |
 | Jobs | Cron route (Vercel cron) or Inngest | Weekly repayment run, reserve accounting, reminders |
@@ -104,6 +104,16 @@ Port it, then make the numbers match the prototype on the sample circles.
 ## Out of scope until the pilot passes its gate
 Native apps, lender interest, multi-country, token/blockchain anything, automated
 collections, a public API.
+
+## Decisions
+
+- **Sign-in is built in-house, not with Auth.js** (Oct 2026). Auth.js v5 was still in
+  beta and neither v4 nor v5 does SMS codes natively. The in-house version is small
+  (`packages/db/src/auth.ts`, with tests): random single-use secrets stored only as
+  HMACs, 15-minute email links, 10-minute SMS codes with 5 tries, 5 requests per
+  person per hour, and database sessions so an admin can sign an agent out everywhere.
+  Email goes through Resend and SMS through Africa's Talking when their keys are set;
+  in development both land in the dev outbox at `/dev/outbox`.
 
 ## Open questions for Jordan (answer in this file as they're settled)
 - Which licensed partner? Determines Daraja setup and who holds the float.

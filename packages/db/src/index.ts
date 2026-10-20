@@ -1,6 +1,8 @@
 import { PrismaClient } from "@prisma/client";
 
 export * from "@prisma/client";
+export * from "./auth";
+export * from "./messenger";
 export * from "./ops";
 export * from "./rail";
 

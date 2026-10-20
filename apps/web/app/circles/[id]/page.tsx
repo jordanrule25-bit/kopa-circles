@@ -1,4 +1,5 @@
 import { aprFromFlatFee } from "@kopa/core";
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import { lendToCircle } from "@/app/lend-actions";
 import { CircleCover } from "@/components/circle-cover";
@@ -155,7 +156,9 @@ export default async function CirclePublic({ params }: { params: Promise<{ id: s
                 {user?.lender ? (
                   <LendForm action={lendToCircle.bind(null, c.id)} remainingCents={remaining} balanceCents={user.lender.balanceCents} circleName={c.name} />
                 ) : (
-                  <Note>Switch to a lender account to lend.</Note>
+                  <Link href={`/signin?next=/circles/${c.id}`} className="rounded-full bg-accent py-2.5 text-center font-medium text-accent-ink hover:brightness-110">
+                    Sign in to lend
+                  </Link>
                 )}
               </>
             ) : (

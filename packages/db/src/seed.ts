@@ -45,6 +45,9 @@ const toLedger = (e: LedgerEventDraft, at: Date): Ledger => ({
 async function main() {
   // Wipe in foreign-key order.
   await prisma.$transaction([
+    prisma.devMessage.deleteMany(),
+    prisma.session.deleteMany(),
+    prisma.loginCode.deleteMany(),
     prisma.ledgerEvent.deleteMany(),
     prisma.reserveEvent.deleteMany(),
     prisma.reserve.deleteMany(),

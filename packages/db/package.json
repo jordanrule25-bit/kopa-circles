@@ -15,7 +15,9 @@
     "seed": "dotenv -e ../../.env -- tsx src/seed.ts",
     "lint": "eslint .",
     "typecheck": "tsc",
-    "test": "dotenv -e ../../.env -- vitest run"
+    "test": "dotenv -e ../../.env -- vitest run",
+    "create-admin": "dotenv -e ../../.env -- tsx src/create-admin.ts",
+    "create-admin:prod": "tsx src/create-admin.ts"
   },
   "dependencies": {
     "@kopa/core": "workspace:*",

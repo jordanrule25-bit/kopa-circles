@@ -1,8 +1,9 @@
 import type { Page } from "@playwright/test";
 
-/** Dev login: the cookie the account switcher sets. Users come from the fictional seed. */
+/** Dev login (DEV_LOGIN=1 only): a real session for a fictional seeded user. */
 export async function signInAs(page: Page, userId: "sample-admin" | "sample-lender-demo" | "sample-agent-eldoret") {
-  await page.context().addCookies([{ name: "kopa_dev_user", value: userId, url: "http://localhost:3000" }]);
+  await page.context().clearCookies();
+  await page.goto(`/dev/login-as?user=${userId}`);
 }
 
 /** Six random digits, so tests running in parallel never share phone numbers or IDs. */

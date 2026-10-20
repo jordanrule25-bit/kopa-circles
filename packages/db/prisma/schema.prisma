@@ -93,6 +93,54 @@ model User {
 
   lender Lender?
   agent  Agent?
+
+  loginCodes LoginCode[]
+  sessions   Session[]
+}
+
+enum LoginChannel {
+  EMAIL
+  SMS
+}
+
+/// A one-time sign-in link (email) or code (SMS). Only a hash is stored.
+model LoginCode {
+  id        String       @id @default(cuid())
+  userId    String
+  user      User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  channel   LoginChannel
+  secretHash String
+  expiresAt DateTime
+  usedAt    DateTime?
+  attempts  Int          @default(0)
+  createdAt DateTime     @default(now())
+
+  @@index([userId, createdAt])
+  @@index([secretHash])
+}
+
+/// A signed-in browser. The cookie holds a random token; only its hash is stored.
+model Session {
+  id         String    @id @default(cuid())
+  tokenHash  String    @unique
+  userId     String
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt  DateTime  @default(now())
+  expiresAt  DateTime
+  revokedAt  DateTime?
+  userAgent  String?
+
+  @@index([userId])
+}
+
+/// Development only: messages that would have been emailed or texted.
+model DevMessage {
+  id        String       @id @default(cuid())
+  channel   LoginChannel
+  to        String
+  subject   String?
+  body      String
+  createdAt DateTime     @default(now())
 }
 
 model Lender {
