@@ -17,8 +17,12 @@ test("lender lends $25 to a raising circle", async ({ page }) => {
   const before = await page.getByTestId("balance").innerText();
   await page.getByRole("form", { name: `Lend to ${name}` }).getByText("$25", { exact: true }).click();
   await page.getByRole("button", { name: "Lend $25" }).click();
-  await expect(page.getByText("Your loan share is in")).toBeVisible();
+  const thanks = page.getByRole("dialog", { name: "Thank you" });
+  await expect(thanks).toBeVisible();
+  await expect(thanks).toContainText(`Your $25 is now part of ${name}`);
+  await thanks.getByRole("button", { name: "Done" }).click();
   await expect(page.getByTestId("balance")).not.toHaveText(before);
+  await expect(page.getByRole("list", { name: /Circle updates/ })).toContainText("Listed");
 
   await page.goto("/portfolio");
   await expect(page.getByRole("row", { name: new RegExp(name) })).toContainText("$25");

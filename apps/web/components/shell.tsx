@@ -56,7 +56,7 @@ export async function Shell({ children }: { children: ReactNode }) {
               <label htmlFor="dev-user" className="sr-only">
                 Dev login
               </label>
-              <select id="dev-user" name="user" defaultValue={user ? `${user.id}|${user.role}` : ""} className="max-w-[180px] rounded-full bg-surface-2 px-3 py-1 text-sm">
+              <select id="dev-user" name="user" defaultValue={user ? `${user.id}|${user.role}` : ""} className="max-w-[240px] rounded-full bg-surface-2 px-3 py-1 text-sm">
                 {users.map((u) => (
                   <option key={u.id} value={`${u.id}|${u.role}`}>
                     {u.name ?? u.email ?? u.id}

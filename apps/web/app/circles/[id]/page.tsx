@@ -1,116 +1,165 @@
-import { aprFromFlatFee, installmentKes } from "@kopa/core";
+import { aprFromFlatFee } from "@kopa/core";
 import { notFound } from "next/navigation";
 import { lendToCircle } from "@/app/lend-actions";
+import { CircleCover } from "@/components/circle-cover";
 import { LendForm } from "@/components/lend-form";
-import { GrowthStage } from "@/components/plants";
-import { Back, Chip, Note, PageHead, Panel, Progress, Score, Stat, Stats } from "@/components/ui";
+import { GrowthStage, Leaf } from "@/components/plants";
+import { Back, Chip, Note, Panel, Progress, Score, Stat, Stats } from "@/components/ui";
 import { loadCircle, statusChip, summarize } from "@/lib/circles";
-import { kes, ordinal, pct, usd, usd0 } from "@/lib/format";
+import { date, kes, ordinal, pct, usd, usd0 } from "@/lib/format";
 import { currentFx } from "@/lib/fx";
 import { currentUser } from "@/lib/session";
+import { circleTimeline } from "@/lib/timeline";
+
+const TONE = { good: "var(--accent)", sun: "var(--sun)", bad: "var(--bad)", neutral: "var(--line)" };
+
+export async function generateMetadata({ params }: { params: Promise<{ id: string }> }) {
+  const c = await loadCircle((await params).id);
+  return { title: c?.name ?? "Circle" };
+}
 
 export default async function CirclePublic({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const [c, user] = await Promise.all([loadCircle(id), currentUser()]);
   if (!c || !["RAISING", "REPAYING", "COMPLETE"].includes(c.status)) notFound();
-  const s = summarize(c, new Date());
+  const today = new Date();
+  const s = summarize(c, today);
   const st = statusChip(c, s);
   const fx = currentFx();
   const mine = user?.lender ? c.shares.filter((x) => x.lenderId === user.id) : [];
   const mineCents = mine.reduce((t, x) => t + x.amountCents, 0);
   const remaining = Math.max(0, s.targetCents - s.fundedCents);
+  const lenders = new Set(c.shares.map((x) => x.lenderId)).size;
+  const borrowers = s.members.filter((m) => m.loan);
+  const timeline = circleTimeline(c, today);
 
   return (
-    <div className="grid gap-5">
-      <div>
+    <div className="grid gap-8">
+      <div className="grid gap-5">
         <Back href="/">All circles</Back>
-        <PageHead
-          title={c.name}
-          sub={`${c.town}, Kenya · ${c.sector} · ${ordinal(c.cycle)} loan`}
-          action={
-            <div className="flex items-center gap-2">
-              <GrowthStage status={c.status} size={30} />
-              <Chip tone={st.tone}>{st.label}</Chip>
-              <Score score={c.score} />
-            </div>
-          }
-        />
-        <p className="mt-3 max-w-3xl">{c.story}</p>
+        <CircleCover id={c.id} names={borrowers.map((m) => m.name)} size="lg" />
+        <div className="flex flex-wrap items-start justify-between gap-4">
+          <div className="max-w-2xl">
+            <h1 className="text-4xl font-semibold sm:text-5xl">{c.name}</h1>
+            <p className="mt-1 text-lg text-muted">
+              {c.town}, Kenya · {c.sector} · {ordinal(c.cycle)} loan
+            </p>
+          </div>
+          <div className="flex items-center gap-2">
+            <GrowthStage status={c.status} size={30} />
+            <Chip tone={st.tone}>{st.label}</Chip>
+            <Score score={c.score} />
+          </div>
+        </div>
+        <p className="max-w-3xl text-lg leading-relaxed">{c.story}</p>
       </div>
 
-      <Stats>
-        <Stat label="Raising" value={usd0(s.targetCents)} sub={`${kes(s.principalKes)} to ${s.members.filter((m) => m.loan).length} members`} />
-        <Stat label="Funded" value={usd0(s.fundedCents)} sub={`${c.shares.length} loan shares`} />
-        <Stat label="Repaid" value={pct(s.totalDueKes ? s.paidKes / s.totalDueKes : 0)} sub={s.disbursedAt ? `week ${s.week} of 26` : "Not disbursed yet"} />
-        {mineCents > 0 && <Stat label="Your share" value={usd(mineCents)} sub={`${usd(mine.reduce((t, x) => t + x.repaidCents, 0))} repaid to you`} />}
-      </Stats>
+      <div className="grid gap-6 lg:grid-cols-[1fr_380px] lg:items-start">
+        <div className="grid gap-6">
+          <Stats>
+            <Stat label="Raising" value={usd0(s.targetCents)} sub={`${kes(s.principalKes)} for ${borrowers.length} people`} />
+            <Stat label="Lenders" value={lenders} sub={`${usd0(s.fundedCents)} lent so far`} />
+            <Stat label="Repaid" value={pct(s.totalDueKes ? s.paidKes / s.totalDueKes : 0)} sub={s.disbursedAt ? `Week ${s.week} of 26` : "Starts after funding"} />
+          </Stats>
 
-      {c.status === "RAISING" && (
-        <Panel>
-          <div className="flex justify-between text-sm">
-            <span>
-              <span className="num">{usd0(s.fundedCents)}</span> of <span className="num">{usd0(s.targetCents)}</span>
-            </span>
-            <span className="num text-muted">{usd0(remaining)} to go</span>
-          </div>
-          <Progress value={s.targetCents ? s.fundedCents / s.targetCents : 0} tone="sun" />
-          {user?.lender ? (
-            <LendForm action={lendToCircle.bind(null, c.id)} remainingCents={remaining} balanceCents={user.lender.balanceCents} circleName={c.name} />
-          ) : (
-            <Note>Switch to a lender account to lend.</Note>
-          )}
-        </Panel>
-      )}
+          <Panel>
+            <h2 className="text-xl font-semibold">The people</h2>
+            <ul className="grid gap-1">
+              {borrowers.map((m) => {
+                const loan = m.loan!;
+                const status =
+                  m.state === "pending"
+                    ? "Waiting for funding"
+                    : m.state === "late"
+                      ? "Catching up"
+                      : loan.status === "CLOSED"
+                        ? "Repaid in full"
+                        : m.coveredKes > 0
+                          ? "On track, with help from the circle"
+                          : "On track";
+                return (
+                  <li key={m.id} className="flex items-center gap-4 border-b border-line py-3 last:border-0">
+                    <span className={m.state === "late" ? "rotate-[100deg]" : ""}>
+                      <Leaf size={22} color={m.state === "late" ? "var(--bad)" : m.state === "pending" ? "var(--line)" : "var(--accent)"} />
+                    </span>
+                    <div className="min-w-0 flex-1">
+                      <div className="font-medium">{m.name.split(" ")[0]}</div>
+                      <div className="text-sm text-muted">{m.business}</div>
+                    </div>
+                    <div className="text-right">
+                      <div className="num font-medium">{usd0(loan.listedUsdCents)}</div>
+                      <div className="text-xs text-muted">{status}</div>
+                    </div>
+                  </li>
+                );
+              })}
+            </ul>
+            <Note>
+              First names only. Each member repays weekly at the circle meeting for 26 weeks. Members are fictional sample borrowers.
+            </Note>
+          </Panel>
 
-      <Panel>
-        <h2 className="text-xl font-semibold">Members</h2>
-        <div className="overflow-x-auto">
-          <table className="data">
-            <thead>
-              <tr>
-                <th>Member</th>
-                <th className="r">Loan</th>
-                <th className="r">Weekly</th>
-                <th className="r">Paid</th>
-                <th>Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              {s.members
-                .filter((m) => m.loan)
-                .map((m) => (
-                  <tr key={m.id}>
-                    <td>
-                      {m.name.split(" ")[0]}
-                      <div className="text-xs text-muted">{m.business}</div>
-                    </td>
-                    <td className="r num">
-                      {kes(m.loan!.principalKesCents)}
-                      <div className="text-xs text-muted">{usd0(m.loan!.listedUsdCents)}</div>
-                    </td>
-                    <td className="r num">{kes(installmentKes(m.loan!.principalKesCents, m.loan!.feeBps, m.loan!.weeks))}</td>
-                    <td className="r num">{kes(m.paidKes)}</td>
-                    <td>
-                      {m.state === "pending"
-                        ? "Waiting for funding"
-                        : m.state === "late"
-                          ? `Behind ${kes(m.arrearsKes)}`
-                          : m.coveredKes > 0
-                            ? `On time (circle covered ${kes(m.coveredKes)})`
-                            : m.loan!.status === "CLOSED"
-                              ? "Repaid in full"
-                              : "On time"}
-                    </td>
-                  </tr>
-                ))}
-            </tbody>
-          </table>
+          <Panel>
+            <h2 className="text-xl font-semibold">Updates</h2>
+            <ol className="relative grid gap-0" aria-label="Circle updates, newest first">
+              {timeline.map((t, i) => (
+                <li key={i} className="relative flex gap-4 pb-5 last:pb-0">
+                  <div className="flex flex-col items-center">
+                    <span className="mt-1.5 h-3 w-3 flex-none rounded-full" style={{ background: TONE[t.tone] }} />
+                    {i < timeline.length - 1 && <span className="mt-1 w-px flex-1 bg-line" />}
+                  </div>
+                  <div className="min-w-0">
+                    <div className="flex flex-wrap items-baseline gap-x-2">
+                      <span className="font-medium">{t.title}</span>
+                      <span className="text-sm text-muted">{date(t.at)}</span>
+                    </div>
+                    {t.detail && <div className="text-sm text-muted">{t.detail}</div>}
+                  </div>
+                </li>
+              ))}
+            </ol>
+          </Panel>
         </div>
-        <Note>
-          Flat 7% fee, 26 weekly payments at the circle meeting, about {pct(aprFromFlatFee(700, 26))} APR. Amounts at about KSh {fx.kesPerUsd} per
-          dollar; lenders carry the exchange-rate risk. First names only. Members are fictional sample borrowers.
-        </Note>
-      </Panel>
+
+        <aside className="grid gap-4 lg:sticky lg:top-20">
+          <Panel>
+            {c.status === "RAISING" ? (
+              <>
+                <div>
+                  <div className="num text-3xl font-semibold tracking-tight">{usd0(remaining)}</div>
+                  <div className="text-muted">still needed of {usd0(s.targetCents)}</div>
+                </div>
+                <Progress value={s.targetCents ? s.fundedCents / s.targetCents : 0} tone="sun" label="Funded" />
+                {user?.lender ? (
+                  <LendForm action={lendToCircle.bind(null, c.id)} remainingCents={remaining} balanceCents={user.lender.balanceCents} circleName={c.name} />
+                ) : (
+                  <Note>Switch to a lender account to lend.</Note>
+                )}
+              </>
+            ) : (
+              <>
+                <div>
+                  <div className="num text-3xl font-semibold tracking-tight">{pct(s.totalDueKes ? s.paidKes / s.totalDueKes : 0)}</div>
+                  <div className="text-muted">repaid so far</div>
+                </div>
+                <Progress value={s.totalDueKes ? s.paidKes / s.totalDueKes : 0} label="Repaid" />
+                <p className="text-sm text-muted">This circle is fully funded. New circles are raising on the Lend page.</p>
+              </>
+            )}
+          </Panel>
+          {mineCents > 0 && (
+            <Panel>
+              <div className="label">Your share</div>
+              <div className="num text-2xl font-semibold">{usd(mineCents)}</div>
+              <div className="text-sm text-muted">{usd(mine.reduce((t, x) => t + x.repaidCents, 0))} repaid to you so far</div>
+            </Panel>
+          )}
+          <Note>
+            Borrowers pay a flat 7% fee, about {pct(aprFromFlatFee(700, 26))} APR. Lenders earn 0% and carry exchange-rate risk at about KSh {fx.kesPerUsd} per
+            dollar. If a payment is missed, the circle covers first, then the reserve, then lenders.
+          </Note>
+        </aside>
+      </div>
     </div>
   );
 }

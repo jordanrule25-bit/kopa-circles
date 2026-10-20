@@ -2,6 +2,7 @@ import Link from "next/link";
 import { lendToCircle } from "@/app/lend-actions";
 import { type CircleFull, type CircleSummary, statusChip } from "@/lib/circles";
 import { ordinal, pct, usd0 } from "@/lib/format";
+import { CircleCover } from "./circle-cover";
 import { LendForm } from "./lend-form";
 import { GrowthStage } from "./plants";
 import { Card, Chip, Dots, Progress, Score } from "./ui";
@@ -10,6 +11,9 @@ export function CircleCard({ c, s, mineCents, balanceCents }: { c: CircleFull; s
   const st = statusChip(c, s);
   return (
     <Card>
+      <Link href={`/circles/${c.id}`} tabIndex={-1} aria-hidden="true">
+        <CircleCover id={c.id} names={s.members.filter((m) => m.loan).map((m) => m.name)} size="sm" />
+      </Link>
       <div className="flex items-start justify-between gap-3">
         <div>
           <h3 className="text-xl font-semibold">
