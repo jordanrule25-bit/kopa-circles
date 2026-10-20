@@ -5,12 +5,17 @@
 // Balances are never edited in place: they are derived from LedgerEvent rows.
 
 generator client {
-  provider = "prisma-client-js"
+  provider      = "prisma-client-js"
+  // native for local work and CI; rhel-openssl-3.0.x for Vercel's runtime.
+  binaryTargets = ["native", "rhel-openssl-3.0.x"]
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  // Pooled connection for the app (Neon: the "-pooler" host).
+  url       = env("DATABASE_URL")
+  // Direct connection for migrations.
+  directUrl = env("DIRECT_URL")
 }
 
 enum Role {

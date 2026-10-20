@@ -17,7 +17,9 @@
     "typecheck": "tsc",
     "test": "dotenv -e ../../.env -- vitest run",
     "create-admin": "dotenv -e ../../.env -- tsx src/create-admin.ts",
-    "create-admin:prod": "tsx src/create-admin.ts"
+    "create-admin:prod": "tsx src/create-admin.ts",
+    "postinstall": "prisma generate",
+    "migrate:deploy:ci": "prisma migrate deploy"
   },
   "dependencies": {
     "@kopa/core": "workspace:*",

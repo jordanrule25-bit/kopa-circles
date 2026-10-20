@@ -16,5 +16,6 @@ export function normalizeNationalId(raw: string): string | null {
 export function hashPii(kind: "phone" | "nationalId", value: string): string {
   const salt = process.env.PII_HASH_SALT;
   if (!salt) throw new Error("PII_HASH_SALT is not set");
+  if (process.env.NODE_ENV === "production" && salt.includes("dev-only")) throw new Error("PII_HASH_SALT is still the development value.");
   return createHash("sha256").update(`${salt}:${kind}:${value}`).digest("hex");
 }

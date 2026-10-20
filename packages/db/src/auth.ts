@@ -17,6 +17,7 @@ export class AuthError extends Error {}
 function secret(): string {
   const s = process.env.AUTH_SECRET;
   if (!s || s.length < 32) throw new Error("AUTH_SECRET must be set to at least 32 random characters.");
+  if (process.env.NODE_ENV === "production" && s.includes("dev-only")) throw new Error("AUTH_SECRET is still the development value.");
   return s;
 }
 const mac = (value: string) => createHmac("sha256", secret()).update(value).digest("hex");
