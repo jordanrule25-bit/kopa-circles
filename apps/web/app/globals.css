@@ -82,3 +82,5 @@ table.data tbody tr:last-child td { border-bottom: 0; }
 .agent .field input, .agent .field select, .agent .field textarea { min-height: 52px; font-size: 17px; border-radius: 14px; padding: 12px 14px; }
 .agent .field > span { font-size: 0.9rem; }
 .safe-bottom { padding-bottom: max(12px, env(safe-area-inset-bottom)); }
+html { scroll-behavior: smooth; }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
