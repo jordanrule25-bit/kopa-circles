@@ -3,24 +3,17 @@
 import { MIN_LOAN_USD_CENTS } from "@kopa/core";
 import { prisma, type Prisma } from "@kopa/db";
 import { revalidatePath } from "next/cache";
-import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { CIRCLE_SIZE, MIN_QUALIFYING } from "@/lib/circle-rules";
 import { currentFx } from "@/lib/fx";
 import { limitFor } from "@/lib/limits";
 import { hashPii, normalizeKenyanPhone, normalizeNationalId } from "@/lib/pii";
-import { DEV_AGENT_COOKIE, requireAgent } from "@/lib/session";
+import { requireAgent } from "@/lib/session";
 
 export type FormState = { error?: string; ok?: boolean };
 
 const firstIssue = (e: z.ZodError) => e.issues[0]?.message ?? "Check the form and try again.";
-
-export async function switchDevAgent(formData: FormData) {
-  const id = String(formData.get("agentId") ?? "");
-  (await cookies()).set(DEV_AGENT_COOKIE, id, { httpOnly: true, sameSite: "lax", path: "/" });
-  redirect("/agent");
-}
 
 async function ownCircle(circleId: string) {
   const agent = await requireAgent();

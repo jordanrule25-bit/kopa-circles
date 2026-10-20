@@ -1,5 +1,6 @@
 import { prisma } from "@kopa/db";
 import Link from "next/link";
+import { ButtonLink, Chip, Empty, PageHead } from "@/components/ui";
 import { STATUS_LABEL } from "@/lib/format";
 import { requireAgent } from "@/lib/session";
 
@@ -12,38 +13,35 @@ export default async function AgentHome() {
   });
 
   return (
-    <main>
-      <div className="mt-6 flex items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-semibold">Your circles</h1>
-          <p className="text-sm text-stone-500">
-            {agent.town} · {agent.partner.name}
-          </p>
-        </div>
-        <Link href="/agent/circles/new" className="rounded bg-emerald-700 px-4 py-2 font-medium text-white hover:bg-emerald-800">
-          New circle
-        </Link>
-      </div>
-
+    <>
+      <PageHead
+        title="My circles"
+        sub={`${agent.town} · ${agent.partner.name}`}
+        action={
+          <ButtonLink href="/agent/circles/new" variant="primary">
+            New circle
+          </ButtonLink>
+        }
+      />
       {circles.length === 0 ? (
-        <p className="mt-8 text-stone-600">No circles yet. Start one with “New circle”.</p>
+        <Empty title="No circles yet">Start one with “New circle”, then add its five members.</Empty>
       ) : (
-        <ul className="mt-6 divide-y divide-stone-200 rounded border border-stone-200 bg-white">
+        <ul className="divide-y divide-line rounded-card border border-line bg-surface">
           {circles.map((c) => (
             <li key={c.id}>
-              <Link href={`/agent/circles/${c.id}`} className="flex items-center justify-between gap-4 px-4 py-3 hover:bg-stone-50">
+              <Link href={`/agent/circles/${c.id}`} className="flex items-center justify-between gap-4 px-4 py-3 hover:bg-surface-2">
                 <span>
-                  <span className="font-medium">{c.name}</span>
-                  <span className="block text-sm text-stone-500">
+                  <span className="font-semibold">{c.name}</span>
+                  <span className="block text-sm text-muted">
                     {c.sector} · loan {c.cycle} · {c._count.members} of 5 members
                   </span>
                 </span>
-                <span className="shrink-0 rounded-full bg-stone-100 px-2 py-0.5 text-xs text-stone-700">{STATUS_LABEL[c.status]}</span>
+                <Chip tone={c.status === "REPAYING" || c.status === "RAISING" ? "good" : "neutral"}>{STATUS_LABEL[c.status]}</Chip>
               </Link>
             </li>
           ))}
         </ul>
       )}
-    </main>
+    </>
   );
 }

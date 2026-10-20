@@ -1,20 +1,42 @@
 import { prisma } from "@kopa/db";
 import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
 
-// DEV ONLY: choose which agent you are with a cookie. Replace with Auth.js
-// phone OTP (see docs/build-spec.md) before anyone outside the team uses this.
-export const DEV_AGENT_COOKIE = "kopa_dev_agent";
+// DEV ONLY: a cookie picks which user you are. Replace with Auth.js (email
+// magic link for lenders, phone OTP for agents) before anyone outside the
+// team uses this. See docs/build-spec.md.
+export const DEV_USER_COOKIE = "kopa_dev_user";
 
-export async function currentAgent() {
-  const id = (await cookies()).get(DEV_AGENT_COOKIE)?.value;
-  const include = { user: true, partner: true } as const;
-  const chosen = id ? await prisma.agent.findUnique({ where: { userId: id }, include }) : null;
-  if (chosen?.active) return chosen;
-  return prisma.agent.findFirst({ where: { active: true }, orderBy: { town: "asc" }, include });
+const include = { lender: true, agent: { include: { partner: true } } } as const;
+export type SessionUser = NonNullable<Awaited<ReturnType<typeof currentUser>>>;
+
+export async function currentUser() {
+  const id = (await cookies()).get(DEV_USER_COOKIE)?.value;
+  if (id) {
+    const u = await prisma.user.findUnique({ where: { id }, include });
+    if (u) return u;
+  }
+  return prisma.user.findFirst({ where: { role: "LENDER" }, orderBy: { id: "asc" }, include });
+}
+
+export async function requireRole<R extends "LENDER" | "AGENT" | "ADMIN">(role: R) {
+  const u = await currentUser();
+  if (!u || u.role !== role) redirect(`/switch?need=${role.toLowerCase()}`);
+  return u as SessionUser & { role: R };
 }
 
 export async function requireAgent() {
-  const agent = await currentAgent();
-  if (!agent) throw new Error("No active agents. Run `pnpm db:seed` to load the sample agents.");
-  return agent;
+  const u = await requireRole("AGENT");
+  if (!u.agent?.active) throw new Error("This agent account is not active.");
+  return u.agent;
+}
+
+export async function requireLender() {
+  const u = await requireRole("LENDER");
+  if (!u.lender) throw new Error("No lender profile.");
+  return { ...u.lender, user: u };
+}
+
+export async function requireAdmin() {
+  return requireRole("ADMIN");
 }
