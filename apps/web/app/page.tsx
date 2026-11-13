@@ -3,6 +3,7 @@ import { portfolioStats, prisma } from "@kopa/db";
 import Link from "next/link";
 import { CircleCard } from "@/components/circle-card";
 import { CircleCover } from "@/components/circle-cover";
+import { AcaciaHorizon, KitengeBackdrop, KitengeDivider, KitengeStripe } from "@/components/motifs";
 import { Bloom, Seed, Sprout } from "@/components/plants";
 import { Empty } from "@/components/ui";
 import { loadCircles, summarize } from "@/lib/circles";
@@ -64,55 +65,66 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ s
   return (
     <div className="grid gap-24 sm:gap-32">
       {/* Hero */}
-      <section className="grid justify-items-center gap-6 pt-4 text-center sm:pt-10">
-        <span className="rounded-full bg-accent-soft px-3 py-1 text-sm font-medium text-accent">Now piloting in Kenya</span>
-        <h1 className="max-w-4xl text-5xl font-semibold leading-[1.04] sm:text-7xl">Small loans that grow together.</h1>
-        <p className="max-w-2xl text-xl text-muted sm:text-2xl">
-          Lend $25 to a circle of five small-business owners. They repay weekly on M-Pesa. You get your money back to lend again.
-        </p>
-        <div className="flex flex-wrap justify-center gap-3">
-          <a href="#circles" className="rounded-full bg-accent px-6 py-3 text-lg font-medium text-accent-ink hover:brightness-110">
-            Find a circle
-          </a>
-          <a href="#how" className="rounded-full px-6 py-3 text-lg font-medium text-accent hover:bg-surface">
-            How it works ›
-          </a>
-        </div>
-        {featured.length > 0 && (
-          <div className="mt-6 grid w-full max-w-4xl gap-4 sm:grid-cols-3" aria-label="Circles raising now">
-            {featured.map((c, i) => (
-              <Link
-                key={c.id}
-                href={`/circles/${c.id}`}
-                className={`grid gap-3 rounded-card bg-surface p-3 text-left shadow-card transition-transform hover:-translate-y-1 ${i === 1 ? "sm:-translate-y-4" : ""}`}
-              >
-                <CircleCover id={c.id} names={c.members.filter((m) => m.loans.length).map((m) => m.name)} size="md" />
-                <div className="px-1 pb-1">
-                  <div className="font-semibold">{c.name}</div>
-                  <div className="text-sm text-muted">
-                    {c.town} · {c.sector}
-                  </div>
-                </div>
-              </Link>
-            ))}
+      <section className="relative -mx-5 overflow-hidden rounded-[32px] hero-wash px-5 pb-10 pt-4 sm:pt-10">
+        <KitengeBackdrop className="opacity-70" />
+        <div className="relative grid justify-items-center gap-6 text-center">
+          <span className="inline-flex items-center gap-2 rounded-full bg-accent-soft px-3 py-1 text-sm font-medium text-accent">
+            <KitengeStripe />
+            Now piloting in Kenya
+          </span>
+          <h1 className="max-w-4xl text-5xl font-semibold leading-[1.04] sm:text-7xl">Small loans that grow together.</h1>
+          <p className="max-w-2xl text-xl text-muted sm:text-2xl">
+            Lend $25 to a circle of five small-business owners. They repay weekly on M-Pesa. You get your money back to lend again.
+          </p>
+          <div className="flex flex-wrap justify-center gap-3">
+            <a href="#circles" className="rounded-full bg-accent px-6 py-3 text-lg font-medium text-accent-ink shadow-card hover:brightness-110">
+              Find a circle
+            </a>
+            <a href="#how" className="rounded-full px-6 py-3 text-lg font-medium text-accent hover:bg-surface">
+              How it works ›
+            </a>
           </div>
-        )}
+          {featured.length > 0 && (
+            <div className="mt-6 grid w-full max-w-4xl gap-4 sm:grid-cols-3" aria-label="Circles raising now">
+              {featured.map((c, i) => (
+                <Link
+                  key={c.id}
+                  href={`/circles/${c.id}`}
+                  className={`grid gap-3 rounded-card bg-surface p-3 text-left shadow-card transition-transform hover:-translate-y-1 ${i === 1 ? "sm:-translate-y-4" : ""}`}
+                >
+                  <CircleCover id={c.id} names={c.members.filter((m) => m.loans.length).map((m) => m.name)} size="md" />
+                  <div className="px-1 pb-1">
+                    <div className="font-semibold">{c.name}</div>
+                    <div className="text-sm text-muted">
+                      {c.town} · {c.sector}
+                    </div>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          )}
+        </div>
       </section>
 
-      {/* Live impact */}
-      <section aria-label="Impact so far" className="grid grid-cols-2 gap-8 text-center sm:grid-cols-4">
-        {[
-          [String(funded.length), "people funded"],
-          [String(towns.size), towns.size === 1 ? "town" : "towns"],
-          [String(lenders.length), "lenders"],
-          [pct(stats.onTimeRate), "paid on time"],
-        ].map(([v, l]) => (
-          <div key={l}>
-            <div className="num text-5xl font-semibold tracking-tight sm:text-6xl">{v}</div>
-            <div className="mt-1 text-muted">{l}</div>
-          </div>
-        ))}
+      {/* Live impact — acacia horizon backdrop, warm clay numbers */}
+      <section aria-label="Impact so far" className="relative overflow-hidden rounded-[28px] bg-surface-2/60 px-4 pb-24 pt-10 sm:pb-28">
+        <AcaciaHorizon />
+        <div className="relative grid grid-cols-2 gap-8 text-center sm:grid-cols-4">
+          {[
+            [String(funded.length), "people funded"],
+            [String(towns.size), towns.size === 1 ? "town" : "towns"],
+            [String(lenders.length), "lenders"],
+            [pct(stats.onTimeRate), "paid on time"],
+          ].map(([v, l], i) => (
+            <div key={l}>
+              <div className={`num text-5xl font-semibold tracking-tight sm:text-6xl ${i === 3 ? "text-accent" : "text-clay"}`}>{v}</div>
+              <div className="mt-1 text-muted">{l}</div>
+            </div>
+          ))}
+        </div>
       </section>
+
+      <KitengeDivider className="opacity-80" />
 
       {/* How it works */}
       <section id="how" className="grid scroll-mt-24 gap-12">
@@ -225,6 +237,8 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ s
           ))}
         </div>
       </section>
+
+      <KitengeDivider className="opacity-80" />
 
       {/* Closing */}
       <section className="grid justify-items-center gap-5 pb-8 text-center">
