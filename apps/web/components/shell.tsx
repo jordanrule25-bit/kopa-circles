@@ -6,9 +6,9 @@ import { switchDevUser } from "@/app/dev-user";
 import { usd } from "@/lib/format";
 import { cookies } from "next/headers";
 import { CLEAR_PAGES_COOKIE, currentUser, devLoginEnabled } from "@/lib/session";
-import { CircleOfFiveMono } from "./motifs";
 import { NavTabs } from "./nav-tabs";
 import { ClearOfflinePages } from "./offline";
+import { Leaf } from "./plants";
 
 const TABS: Record<string, Array<{ href: string; label: string }>> = {
   LENDER: [
@@ -55,9 +55,9 @@ export async function Shell({ children }: { children: ReactNode }) {
       </a>
       <header className="sticky top-0 z-10 border-b border-line/70 bg-glass backdrop-blur-xl backdrop-saturate-150">
         <div className="mx-auto flex max-w-[1080px] flex-wrap items-center gap-x-8 gap-y-1 px-5 py-2.5">
-          <Link href="/" className="flex items-center gap-2 text-fg">
-            <CircleOfFiveMono size={22} className="text-accent" />
-            <span className="font-display text-[1.15rem] font-medium tracking-tight">Kopa Circles</span>
+          <Link href="/" className="flex items-center gap-2">
+            <Leaf size={22} vein="var(--bg)" />
+            <span className="text-[1.05rem] font-semibold tracking-tight">Kopa Circles</span>
           </Link>
           <NavTabs tabs={tabs} />
           <div className="ml-auto flex items-center gap-4">

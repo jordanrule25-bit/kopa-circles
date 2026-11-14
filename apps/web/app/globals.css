@@ -1,33 +1,28 @@
 @import "tailwindcss";
 
-/* Editorial + craft: a magazine-style sans/serif pairing on a warm ivory
-   ground. Pine green and muted clay used sparingly. Signature elements are
-   hand-drawn, not geometric — texture lives in the ink line, not in pattern. */
+/* Clean and quiet: Apple-style system type, soft grey ground, white cards,
+   one green accent. Plant motifs only where they carry meaning. */
 :root {
-  --bg: #f8f2e6; --surface: #fffaf0; --surface-2: #f0e7d3; --line: #ddd0b4;
-  --fg: #1c1612; --muted: #6b5f4d; --accent: #1a5e36; --accent-ink: #fffaf0; --accent-soft: #e4ece2;
-  --sun: #b85d26; --sun-soft: #f7e0cb;
-  --good: #1a5e36; --warn: #a06410; --bad: #a83528; --bad-soft: #f5dcd5;
-  --clay: #b85d26; --clay-soft: #f7e0cb; --ink: #1c1612; --paper: #fffaf0; --indigo: #35456b;
-  --glass: rgba(248, 242, 230, 0.82);
-  --shadow: 0 1px 2px rgba(60, 40, 10, 0.04), 0 8px 24px rgba(60, 40, 10, 0.06);
-  /* Fraunces display + IBM Plex Sans body. Fallbacks keep rendering sensible if
-     the webfonts are still in flight. */
-  --font-body: var(--font-plex), -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
-  --font-display: var(--font-fraunces), ui-serif, "Iowan Old Style", Georgia, "Times New Roman", serif;
-  --series-1: #1a5e36; --series-2: #b85d26; --series-none: #ddd0b4;
-  --r: 14px;
+  --bg: #f5f5f7; --surface: #ffffff; --surface-2: #f0f1ef; --line: #e3e4e1;
+  --fg: #1d1d1f; --muted: #66666b; --accent: #1a7a35; --accent-ink: #ffffff; --accent-soft: #e6f4e9;
+  --sun: #6dbb5a; --sun-soft: #eef7ea;
+  --good: #1a7a35; --warn: #a2711a; --bad: #c4372d; --bad-soft: #fbe9e7;
+  --glass: rgba(255, 255, 255, 0.72);
+  --shadow: 0 1px 2px rgba(0, 0, 0, 0.04), 0 6px 20px rgba(0, 0, 0, 0.05);
+  --font-body: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", "Segoe UI", system-ui, sans-serif;
+  --font-display: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Helvetica Neue", "Segoe UI", system-ui, sans-serif;
+  /* Chart series, validated for colour-vision deficiency against the surface. */
+  --series-1: #1f6f3a; --series-2: #6fb24a; --series-none: #e3e4e1;
+  --r: 18px;
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --bg: #141217; --surface: #1f1b20; --surface-2: #2a2530; --line: #3a3340;
-    --fg: #f4ebd9; --muted: #a89c86; --accent: #6ac98a; --accent-ink: #0b2415; --accent-soft: #163a20;
-    --sun: #ff9a56; --sun-soft: #3a2616;
-    --good: #6ac98a; --warn: #e0b25a; --bad: #ff6b5e; --bad-soft: #3a1d1a;
-    --clay: #ff9a56; --clay-soft: #3a2616; --ink: #f4ebd9; --paper: #1f1b20; --indigo: #7a8bb8;
-    --glass: rgba(20, 18, 23, 0.82);
-    --shadow: 0 0 0 1px rgba(255, 237, 200, 0.06), 0 8px 24px rgba(0, 0, 0, 0.35);
-    --series-1: #6ac98a; --series-2: #ff9a56; --series-none: #3a3340;
+    --bg: #000000; --surface: #1c1c1e; --surface-2: #2c2c2e; --line: #38383a;
+    --fg: #f5f5f7; --muted: #a1a1a6; --accent: #34c759; --accent-ink: #00170a; --accent-soft: #10291a;
+    --sun: #7fd06b; --sun-soft: #16251a; --good: #34c759; --warn: #e0b25a; --bad: #ff6b5e; --bad-soft: #3a1d1a;
+    --glass: rgba(22, 22, 23, 0.72);
+    --shadow: 0 0 0 1px rgba(255, 255, 255, 0.06);
+    --series-1: #226f3c; --series-2: #78a334; --series-none: #38383a;
     color-scheme: dark;
   }
 }
@@ -44,11 +39,6 @@
   --color-accent-soft: var(--accent-soft);
   --color-sun: var(--sun);
   --color-sun-soft: var(--sun-soft);
-  --color-clay: var(--clay);
-  --color-clay-soft: var(--clay-soft);
-  --color-indigo: var(--indigo);
-  --color-ink: var(--ink);
-  --color-paper: var(--paper);
   --color-good: var(--good);
   --color-warn: var(--warn);
   --color-bad: var(--bad);
@@ -64,70 +54,42 @@ body {
   background: var(--bg);
   color: var(--fg);
   font-family: var(--font-body);
-  font-size: 16.5px;
-  line-height: 1.55;
+  font-size: 16px;
+  line-height: 1.5;
   -webkit-font-smoothing: antialiased;
 }
-/* Headings get Fraunces with the SOFT axis turned on for a hand-drawn warmth. */
-h1, h2, h3 {
-  font-family: var(--font-display);
-  text-wrap: balance;
-  letter-spacing: -0.015em;
-  font-feature-settings: "ss01" on;
-  font-variation-settings: "SOFT" 70, "opsz" 48;
-  font-weight: 500;
-}
+h1, h2, h3 { font-family: var(--font-display); text-wrap: balance; letter-spacing: -0.022em; }
 p { text-wrap: pretty; }
 :focus-visible { outline: 3px solid color-mix(in srgb, var(--accent) 45%, transparent); outline-offset: 2px; }
 button { cursor: pointer; }
 button:disabled { cursor: not-allowed; }
 
 .num { font-variant-numeric: tabular-nums; }
-/* Oversized display numbers use Fraunces with wider soft axis, so they feel
-   drawn rather than typeset. Apply with className="num display-num". */
-.display-num {
-  font-family: var(--font-display);
-  font-variation-settings: "SOFT" 100, "opsz" 144;
-  font-feature-settings: "tnum" on, "lnum" on;
-  letter-spacing: -0.03em;
-}
-/* An italic Fraunces kicker, used as an editorial strapline above headlines. */
-.kicker {
-  font-family: var(--font-display);
-  font-style: italic;
-  font-variation-settings: "SOFT" 100, "opsz" 24;
-  color: var(--muted);
-  letter-spacing: 0.01em;
-}
-.label { font-size: 0.8rem; color: var(--muted); font-weight: 500; letter-spacing: 0.04em; text-transform: uppercase; }
+.label { font-size: 0.8rem; color: var(--muted); font-weight: 500; }
 .field { display: grid; gap: 6px; }
 .field > span, .field > label { font-size: 0.85rem; font-weight: 500; color: var(--muted); }
 .field input, .field select, .field textarea {
-  border: 1px solid transparent; background: var(--surface-2); color: var(--fg); border-radius: 10px; padding: 10px 12px; width: 100%; font: inherit;
+  border: 1px solid transparent; background: var(--surface-2); color: var(--fg); border-radius: 12px; padding: 10px 12px; width: 100%; font: inherit;
 }
 .field input:focus, .field select:focus, .field textarea:focus { outline: none; border-color: var(--accent); background: var(--surface); }
 .field .hint { font-size: 0.8rem; color: var(--muted); font-weight: 400; }
 table.data { border-collapse: collapse; width: 100%; font-size: 0.92rem; }
 table.data th, table.data td { text-align: left; padding: 12px 12px; border-bottom: 1px solid var(--line); vertical-align: top; }
-table.data th { font-size: 0.78rem; color: var(--muted); font-weight: 500; letter-spacing: 0.04em; text-transform: uppercase; }
+table.data th { font-size: 0.8rem; color: var(--muted); font-weight: 500; }
 table.data .r { text-align: right; }
 table.data tbody tr:last-child td { border-bottom: 0; }
 @media (prefers-reduced-motion: no-preference) { .progress-fill { transition: width 0.5s cubic-bezier(0.2, 0.8, 0.2, 1); } }
 
-.agent .field input, .agent .field select, .agent .field textarea { min-height: 52px; font-size: 17px; border-radius: 12px; padding: 12px 14px; }
+/* Agent screens are used one-handed on Android phones: big targets, and 17px
+   inputs so mobile browsers don't zoom in on focus. */
+.agent .field input, .agent .field select, .agent .field textarea { min-height: 52px; font-size: 17px; border-radius: 14px; padding: 12px 14px; }
 .agent .field > span { font-size: 0.9rem; }
 .safe-bottom { padding-bottom: max(12px, env(safe-area-inset-bottom)); }
 html { scroll-behavior: smooth; }
 @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
 
+/* Respect "reduce motion": no lifts, pulses or smooth scrolling. */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
   .hover\:-translate-y-0\.5:hover, .hover\:-translate-y-1:hover { transform: none; }
-}
-
-/* Soft golden-hour wash kept for the hero — just a top glow and warm floor. */
-.hero-wash {
-  background:
-    radial-gradient(ellipse 110% 70% at 50% 0%, color-mix(in srgb, var(--sun-soft) 55%, transparent) 0%, transparent 65%),
-    radial-gradient(ellipse 80% 90% at 100% 100%, color-mix(in srgb, var(--accent-soft) 45%, transparent) 0%, transparent 70%);
 }
