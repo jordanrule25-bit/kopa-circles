@@ -101,30 +101,6 @@ export function AcaciaHorizon({ className = "" }: { className?: string }) {
   );
 }
 
-/** A centred rising-sun glow for a hero number. Softer than the acacia horizon. */
-export function SunGlow({ className = "" }: { className?: string }) {
-  return (
-    <svg
-      className={`pointer-events-none absolute inset-0 h-full w-full ${className}`}
-      aria-hidden="true"
-      viewBox="0 0 800 400"
-      preserveAspectRatio="xMidYMid slice"
-    >
-      <defs>
-        <radialGradient id="sun-glow-center" cx="50%" cy="68%" r="55%">
-          <stop offset="0%" stopColor="var(--clay)" stopOpacity="0.32" />
-          <stop offset="55%" stopColor="var(--clay)" stopOpacity="0.08" />
-          <stop offset="100%" stopColor="var(--clay)" stopOpacity="0" />
-        </radialGradient>
-      </defs>
-      <ellipse cx="400" cy="260" rx="360" ry="200" fill="url(#sun-glow-center)" />
-      {/* A thin ring, like a horizon-caught halo */}
-      <ellipse cx="400" cy="270" rx="200" ry="200" fill="none" stroke="var(--clay)" strokeWidth="1" opacity="0.18" />
-      <ellipse cx="400" cy="270" rx="130" ry="130" fill="none" stroke="var(--accent)" strokeWidth="1" opacity="0.14" />
-    </svg>
-  );
-}
-
 /** A single kitenge-style stripe used inside the "piloting in Kenya" chip. */
 export function KitengeStripe({ className = "" }: { className?: string }) {
   return (

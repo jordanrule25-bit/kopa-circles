@@ -1,7 +1,6 @@
 import { aprFromFlatFee, kesToUsdCents } from "@kopa/core";
 import { portfolioStats, prisma } from "@kopa/db";
 import { BalanceChart, CollectionsChart } from "@/components/charts";
-import { KitengeBackdrop, KitengeDivider, KitengeStripe, SunGlow } from "@/components/motifs";
 import { Note, Panel, Stat, Stats } from "@/components/ui";
 import { date, kes, pct, usd, usd0 } from "@/lib/format";
 import { currentFx } from "@/lib/fx";
@@ -45,34 +44,21 @@ export default async function Platform() {
 
   return (
     <div className="grid gap-16">
-      {/* Hero — warm wash, kitenge backdrop */}
-      <section className="relative -mx-5 overflow-hidden rounded-[32px] hero-wash px-5 pb-10 pt-8 sm:pt-12">
-        <KitengeBackdrop className="opacity-55" />
-        <div className="relative grid max-w-3xl gap-4">
-          <span className="inline-flex items-center gap-2 text-sm font-medium text-accent">
-            <KitengeStripe />
-            Transparency report · {date(now)}
-          </span>
-          <h1 className="text-5xl font-semibold leading-[1.05] sm:text-6xl">Every shilling, in the open.</h1>
-          <p className="text-xl text-muted">
-            These numbers come straight from the ledger that records every loan, payment and payout. Nothing is rounded up or left out.
-          </p>
-        </div>
+      <section className="grid max-w-3xl gap-4">
+        <span className="text-sm font-medium text-accent">Transparency report · {date(now)}</span>
+        <h1 className="text-5xl font-semibold leading-[1.05] sm:text-6xl">Every shilling, in the open.</h1>
+        <p className="text-xl text-muted">
+          These numbers come straight from the ledger that records every loan, payment and payout. Nothing is rounded up or left out.
+        </p>
       </section>
 
-      {/* Headline — on-time percentage in a rising-sun glow */}
-      <section aria-label="Headline" className="relative overflow-hidden rounded-[28px] bg-surface-2/50 px-6 py-14 sm:py-20">
-        <SunGlow />
-        <div className="relative grid justify-items-center gap-2 text-center">
-          <div className="label">Paid on time or covered by the circle</div>
-          <div className="num text-7xl font-semibold tracking-tight text-accent sm:text-8xl">{pct(s.onTimeRate)}</div>
-          <p className="max-w-xl text-muted">
-            of {s.dueCount} weekly payments due so far. The circle stepped in on {s.coveredByCircle}.
-          </p>
-        </div>
+      <section aria-label="Headline" className="grid gap-2">
+        <div className="label">Paid on time or covered by the circle</div>
+        <div className="num text-7xl font-semibold tracking-tight sm:text-8xl">{pct(s.onTimeRate)}</div>
+        <p className="text-muted">
+          of {s.dueCount} weekly payments due so far. The circle stepped in on {s.coveredByCircle}.
+        </p>
       </section>
-
-      <KitengeDivider className="opacity-80" />
 
       <Stats>
         <Stat label="Lent to members" value={usd0(s.disbursedUsd)} sub={`${kes(s.disbursedKes)} · ${count("REPAYING") + count("COMPLETE")} circles`} />
@@ -114,8 +100,6 @@ export default async function Platform() {
         </div>
         <BalanceChart points={reserve.map((p) => ({ iso: p.at.toISOString(), value: p.balanceKes / 100 }))} label="Reserve balance" today={now.toISOString()} />
       </Panel>
-
-      <KitengeDivider className="opacity-80" />
 
       <div className="grid gap-6 md:grid-cols-2">
         <Panel>
