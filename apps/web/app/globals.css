@@ -1,33 +1,28 @@
 @import "tailwindcss";
 
-/* Kenya at golden hour: warm ivory ground, acacia green as the brand,
-   terracotta as the active "raising / in-progress" warmth. Kitenge pattern
-   motifs appear in the hero and as section dividers.
-   Palette stays accessible: contrast ratios verified against light + dark. */
+/* Clean and quiet: Apple-style system type, soft grey ground, white cards,
+   one green accent. Plant motifs only where they carry meaning. */
 :root {
-  --bg: #faf5ec; --surface: #ffffff; --surface-2: #f3eadb; --line: #e8dbc3;
-  --fg: #1a1a1a; --muted: #6b6253; --accent: #1a7a35; --accent-ink: #ffffff; --accent-soft: #e6f4e9;
-  --sun: #d4692a; --sun-soft: #fbe4cf;
-  --good: #1a7a35; --warn: #b47616; --bad: #c4372d; --bad-soft: #fbe4df;
-  --clay: #d4692a; --clay-soft: #fbe4cf; --indigo: #3a4a6b;
-  --glass: rgba(250, 245, 236, 0.78);
-  --shadow: 0 1px 2px rgba(60, 40, 10, 0.05), 0 8px 24px rgba(60, 40, 10, 0.07);
+  --bg: #f5f5f7; --surface: #ffffff; --surface-2: #f0f1ef; --line: #e3e4e1;
+  --fg: #1d1d1f; --muted: #66666b; --accent: #1a7a35; --accent-ink: #ffffff; --accent-soft: #e6f4e9;
+  --sun: #6dbb5a; --sun-soft: #eef7ea;
+  --good: #1a7a35; --warn: #a2711a; --bad: #c4372d; --bad-soft: #fbe9e7;
+  --glass: rgba(255, 255, 255, 0.72);
+  --shadow: 0 1px 2px rgba(0, 0, 0, 0.04), 0 6px 20px rgba(0, 0, 0, 0.05);
   --font-body: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", "Segoe UI", system-ui, sans-serif;
   --font-display: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Helvetica Neue", "Segoe UI", system-ui, sans-serif;
   /* Chart series, validated for colour-vision deficiency against the surface. */
-  --series-1: #1f6f3a; --series-2: #d4692a; --series-none: #e8dbc3;
+  --series-1: #1f6f3a; --series-2: #6fb24a; --series-none: #e3e4e1;
   --r: 18px;
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --bg: #141217; --surface: #1f1d24; --surface-2: #2a2730; --line: #3a3742;
-    --fg: #f4ede0; --muted: #a89d8b; --accent: #4ed07a; --accent-ink: #072612; --accent-soft: #143b1e;
-    --sun: #ff9a56; --sun-soft: #3a2616;
-    --good: #4ed07a; --warn: #e0b25a; --bad: #ff6b5e; --bad-soft: #3a1d1a;
-    --clay: #ff9a56; --clay-soft: #3a2616; --indigo: #6d7fa8;
-    --glass: rgba(20, 18, 23, 0.78);
-    --shadow: 0 0 0 1px rgba(255, 237, 200, 0.06), 0 8px 24px rgba(0, 0, 0, 0.35);
-    --series-1: #4ed07a; --series-2: #ff9a56; --series-none: #3a3742;
+    --bg: #000000; --surface: #1c1c1e; --surface-2: #2c2c2e; --line: #38383a;
+    --fg: #f5f5f7; --muted: #a1a1a6; --accent: #34c759; --accent-ink: #00170a; --accent-soft: #10291a;
+    --sun: #7fd06b; --sun-soft: #16251a; --good: #34c759; --warn: #e0b25a; --bad: #ff6b5e; --bad-soft: #3a1d1a;
+    --glass: rgba(22, 22, 23, 0.72);
+    --shadow: 0 0 0 1px rgba(255, 255, 255, 0.06);
+    --series-1: #226f3c; --series-2: #78a334; --series-none: #38383a;
     color-scheme: dark;
   }
 }
@@ -44,9 +39,6 @@
   --color-accent-soft: var(--accent-soft);
   --color-sun: var(--sun);
   --color-sun-soft: var(--sun-soft);
-  --color-clay: var(--clay);
-  --color-clay-soft: var(--clay-soft);
-  --color-indigo: var(--indigo);
   --color-good: var(--good);
   --color-warn: var(--warn);
   --color-bad: var(--bad);
@@ -100,12 +92,4 @@ html { scroll-behavior: smooth; }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
   .hover\:-translate-y-0\.5:hover, .hover\:-translate-y-1:hover { transform: none; }
-}
-
-/* Hero backdrop: a soft golden-hour wash from top to a warmer sand bottom.
-   Reads as sunlit paper rather than flat fill. */
-.hero-wash {
-  background:
-    radial-gradient(ellipse 90% 60% at 50% 0%, color-mix(in srgb, var(--sun-soft) 70%, transparent) 0%, transparent 60%),
-    radial-gradient(ellipse 60% 80% at 100% 100%, color-mix(in srgb, var(--accent-soft) 55%, transparent) 0%, transparent 70%);
 }
