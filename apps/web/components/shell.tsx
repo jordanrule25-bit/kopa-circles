@@ -53,6 +53,18 @@ export async function Shell({ children }: { children: ReactNode }) {
       >
         Skip to content
       </a>
+      {/* Mission-first thin top bar — Patagonia-style. Mission links left,
+          account action right. Dark so it reads as the publisher's masthead. */}
+      <div className="w-full bg-fg text-bg">
+        <div className="mx-auto flex max-w-[1080px] items-center justify-between gap-6 px-5 py-2 text-xs sm:text-sm">
+          <nav className="flex items-center gap-6" aria-label="Mission">
+            <Link href="/platform" className="hover:underline underline-offset-4">Transparency</Link>
+            <Link href="/#how" className="hidden hover:underline underline-offset-4 sm:inline">How it works</Link>
+            <Link href="/signin/agent" className="hidden hover:underline underline-offset-4 sm:inline">Agents</Link>
+          </nav>
+          <span className="opacity-70">Piloting in Kenya · All names shown are sample data</span>
+        </div>
+      </div>
       <header className="sticky top-0 z-10 border-b border-line/70 bg-glass backdrop-blur-xl backdrop-saturate-150">
         <div className="mx-auto flex max-w-[1080px] flex-wrap items-center gap-x-8 gap-y-1 px-5 py-2.5">
           <Link href="/" className="flex items-center gap-2 text-fg">

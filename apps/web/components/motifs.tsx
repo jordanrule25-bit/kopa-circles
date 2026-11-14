@@ -138,3 +138,57 @@ export function SunGlow({ className = "" }: { className?: string }) {
     </svg>
   );
 }
+
+/** A full-width Kenyan-dusk landscape for the Patagonia-scale hero.
+ *  Deep sky gradient falling to warm sun, layered mountain ridges in silhouette,
+ *  acacia trees at the horizon. Dark enough that ivory text sits on it legibly. */
+export function HeroLandscape({ className = "" }: { className?: string }) {
+  return (
+    <svg
+      className={`pointer-events-none absolute inset-0 h-full w-full ${className}`}
+      aria-hidden="true"
+      viewBox="0 0 1600 900"
+      preserveAspectRatio="xMidYMid slice"
+    >
+      <defs>
+        <linearGradient id="dusk-sky" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="#0f1e2b" />
+          <stop offset="55%" stopColor="#3a2518" />
+          <stop offset="78%" stopColor="#8a4218" />
+          <stop offset="92%" stopColor="#c76a2a" />
+          <stop offset="100%" stopColor="#e89144" />
+        </linearGradient>
+        <radialGradient id="dusk-sun" cx="68%" cy="78%" r="28%">
+          <stop offset="0%" stopColor="#ffdfae" stopOpacity="0.95" />
+          <stop offset="40%" stopColor="#f6b375" stopOpacity="0.55" />
+          <stop offset="100%" stopColor="#f6b375" stopOpacity="0" />
+        </radialGradient>
+      </defs>
+      <rect x="0" y="0" width="1600" height="900" fill="url(#dusk-sky)" />
+      <circle cx="1090" cy="700" r="140" fill="#ffd79a" opacity="0.92" />
+      <circle cx="1090" cy="700" r="320" fill="url(#dusk-sun)" />
+      <path d="M0 720 L140 650 L260 690 L400 610 L560 680 L720 620 L880 700 L1040 650 L1200 720 L1360 660 L1500 700 L1600 680 L1600 900 L0 900 Z" fill="#1c3221" opacity="0.88" />
+      <path d="M0 790 L160 740 L320 780 L480 720 L640 790 L820 740 L980 790 L1160 750 L1320 790 L1480 760 L1600 790 L1600 900 L0 900 Z" fill="#0f2316" opacity="0.92" />
+      <path d="M0 840 L1600 820 L1600 900 L0 900 Z" fill="#070f09" />
+      <g transform="translate(140 760)" fill="#070f09">
+        <rect x="-2" y="0" width="4" height="90" />
+        <ellipse cx="0" cy="-6" rx="60" ry="14" />
+        <ellipse cx="0" cy="-16" rx="42" ry="7" />
+      </g>
+      <g transform="translate(260 790)" fill="#070f09" opacity="0.85">
+        <rect x="-1.5" y="0" width="3" height="60" />
+        <ellipse cx="0" cy="-4" rx="36" ry="10" />
+      </g>
+      <g transform="translate(1340 770)" fill="#070f09">
+        <rect x="-2" y="0" width="4" height="80" />
+        <ellipse cx="0" cy="-6" rx="54" ry="13" />
+        <ellipse cx="0" cy="-16" rx="36" ry="6" />
+      </g>
+      <g transform="translate(1460 800)" fill="#070f09" opacity="0.85">
+        <rect x="-1.5" y="0" width="3" height="50" />
+        <ellipse cx="0" cy="-4" rx="30" ry="8" />
+      </g>
+      <rect x="0" y="0" width="1100" height="900" fill="#000" opacity="0.28" />
+    </svg>
+  );
+}

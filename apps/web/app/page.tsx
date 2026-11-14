@@ -6,13 +6,13 @@ import { CircleCover } from "@/components/circle-cover";
 import {
   Dateline,
   DispatchItem,
-  LedgerButton,
   LedgerLink,
   LedgerRow,
   LedgerTicker,
   Qa,
   SectionNo,
 } from "@/components/ledger";
+import { HeroLandscape } from "@/components/motifs";
 import { Empty } from "@/components/ui";
 import { loadCircles, summarize } from "@/lib/circles";
 import { kes, pct, usd0 } from "@/lib/format";
@@ -85,49 +85,64 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ s
   ];
 
   return (
-    <div className="grid gap-16 sm:gap-20">
-      {/* Dateline flag + ticker — the signature "it's a ledger" element */}
+    <div className="-mt-10 grid gap-16 sm:gap-20">
+      {/* Full-bleed Patagonia-scale hero: dusk Kenyan landscape, oversized
+          Fraunces headline laid over it, confident short copy, two CTAs.
+          marginLeft/width escapes the 1080px main container to full viewport. */}
+      <section
+        className="relative overflow-hidden text-paper"
+        style={{ marginLeft: "calc(50% - 50vw)", width: "100vw", minHeight: "min(640px, 78vh)" }}
+      >
+        <HeroLandscape />
+        <div className="relative mx-auto grid max-w-[1080px] gap-6 px-5 pb-16 pt-16 sm:pb-24 sm:pt-28">
+          <span className="font-mono text-[0.72rem] uppercase tracking-[0.22em] text-paper/80">
+            Circle lending · Kenya · Pilot edition {edition}
+          </span>
+          <h1 className="max-w-4xl font-display text-[clamp(3rem,8vw,6.5rem)] leading-[0.95] text-paper">
+            Small loans that grow together.
+          </h1>
+          <p className="max-w-xl text-lg leading-relaxed text-paper/90 sm:text-xl">
+            Lend $25 to a circle of five small-business owners in Kenya. They repay weekly on M-Pesa. Lenders earn
+            nothing — the point is to get the money back and lend again.
+          </p>
+          <div className="flex flex-wrap items-center gap-3 pt-2">
+            <Link
+              href="#circles"
+              className="inline-flex items-center rounded-full bg-paper px-6 py-3 text-base font-medium text-fg transition-colors hover:bg-paper/90"
+            >
+              Lend $25
+            </Link>
+            <Link
+              href="#how"
+              className="inline-flex items-center rounded-full border border-paper/70 px-6 py-3 text-base font-medium text-paper hover:bg-paper/10"
+            >
+              How it works
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* Dateline flag + ticker — the ledger signature, now tucked under the hero */}
       <div className="grid gap-0">
         <Dateline edition={edition} place="Nakuru & Mombasa, Kenya" date={todayShort} />
         <LedgerTicker items={tickerItems} />
       </div>
 
-      {/* Masthead — editorial hero, warmed up by a golden-hour wash.
-          Dateline above stays stark; this band is the invitation. */}
-      <section className="relative -mx-5 overflow-hidden hero-wash px-5 pb-10 pt-10 sm:pt-14">
-        <div className="relative grid gap-6">
-          <span className="kicker text-base sm:text-lg">
-            A circle of five. One loan each. Lenders earn nothing — and everyone goes further.
-          </span>
-          <h1 className="max-w-4xl text-[clamp(2.8rem,7vw,5.5rem)] leading-[0.98] font-display">
-            Small loans that grow together.
-          </h1>
-          <div className="grid max-w-5xl gap-8 border-y border-fg py-6 sm:grid-cols-[2fr_1fr] sm:items-start sm:gap-14">
-            <p className="max-w-xl text-lg leading-relaxed text-fg sm:text-xl">
-              Lend $25 to a circle of five small-business owners in Kenya. They repay weekly on M-Pesa; your share comes
-              back to lend again. The circle covers for anyone who falls behind, then a first-loss reserve, before
-              lenders feel a thing.
-            </p>
-            <aside className="grid gap-3 text-sm leading-relaxed text-muted">
-              <div>
-                <span className="label block">The product in a line</span>
-                <span>Kiva's lender product, Grameen's circle mechanics, M-Pesa rails. No MFI in the middle.</span>
-              </div>
-              <div>
-                <span className="label block">Lender return</span>
-                <span className="num font-medium text-fg">0.00% — principal only</span>
-              </div>
-              <div>
-                <span className="label block">Borrower cost</span>
-                <span className="num font-medium text-fg">7.00% flat · 26 weekly payments</span>
-              </div>
-            </aside>
-          </div>
-          <div className="flex flex-wrap items-center gap-4">
-            <LedgerButton href="#circles">Lend $25 — browse circles</LedgerButton>
-            <LedgerLink href="#how">Read how it works</LedgerLink>
-            <span className="text-sm text-muted">Takes about a minute.</span>
-          </div>
+      {/* Product fact band — three compact facts, Patagonia-style confidence */}
+      <section className="grid gap-8 border-y border-fg py-8 sm:grid-cols-3 sm:gap-10">
+        <div className="grid gap-1">
+          <span className="label">The product in a line</span>
+          <span className="text-fg">Kiva's lender product, Grameen's circle mechanics, M-Pesa rails. No MFI in the middle.</span>
+        </div>
+        <div className="grid gap-1">
+          <span className="label">Lender return</span>
+          <span className="font-display text-3xl text-fg">0.00%</span>
+          <span className="text-sm text-muted">Principal only. Always.</span>
+        </div>
+        <div className="grid gap-1">
+          <span className="label">Borrower cost</span>
+          <span className="font-display text-3xl text-fg">7.00% flat</span>
+          <span className="text-sm text-muted">26 weekly M-Pesa payments.</span>
         </div>
       </section>
 
@@ -155,7 +170,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ s
         />
 
         {raising.slice(0, 3).length > 0 && (
-          <div className="grid gap-4 border-b border-line pb-8 sm:grid-cols-3">
+          <div className="grid gap-5 pb-4 sm:grid-cols-3">
             {raising.slice(0, 3).map((c) => {
               const sum = summarize(c, today);
               const pctFunded = sum.targetCents ? Math.min(100, Math.round((sum.fundedCents / sum.targetCents) * 100)) : 0;
@@ -164,27 +179,30 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ s
                 <Link
                   key={c.id}
                   href={`/circles/${c.id}`}
-                  className="group grid gap-3 border border-line p-4 transition-colors hover:border-fg"
-                  style={{ borderRadius: 4 }}
+                  className="group grid gap-3 transition-opacity hover:opacity-90"
                 >
-                  <CircleCover id={c.id} names={c.members.filter((m) => m.loans.length).map((m) => m.name)} size="md" />
-                  <div className="grid gap-1">
+                  <div className="aspect-[4/3] overflow-hidden">
+                    <div className="h-full w-full">
+                      <CircleCover id={c.id} names={c.members.filter((m) => m.loans.length).map((m) => m.name)} size="lg" />
+                    </div>
+                  </div>
+                  <div className="grid gap-1 pt-1">
                     <div className="kicker not-italic text-xs">Circle · {c.town}</div>
-                    <div className="font-display text-xl leading-tight">{c.name}</div>
+                    <div className="font-display text-2xl leading-tight">{c.name}</div>
                     <div className="text-sm text-muted">
                       {c.members.length} members · {c.sector}
                     </div>
                   </div>
-                  <div className="mt-1 grid gap-1.5">
+                  <div className="grid gap-1.5 pt-1">
                     <div className="flex items-baseline justify-between gap-2 text-xs text-muted">
                       <span>
-                        Raising <span className="num font-medium text-fg">{usd0(sum.fundedCents)}</span> of{" "}
+                        <span className="num font-medium text-fg">{usd0(sum.fundedCents)}</span> of{" "}
                         <span className="num">{usd0(sum.targetCents)}</span>
                       </span>
                       <span className="num">{toGo ? `${usd0(toGo)} to go` : "fully funded"}</span>
                     </div>
-                    <div className="h-1 overflow-hidden bg-surface-2" style={{ borderRadius: 1 }}>
-                      <div className="h-full bg-clay" style={{ width: `${pctFunded}%`, borderRadius: 1 }} aria-hidden="true" />
+                    <div className="h-1 overflow-hidden bg-surface-2">
+                      <div className="h-full bg-clay" style={{ width: `${pctFunded}%` }} aria-hidden="true" />
                     </div>
                   </div>
                 </Link>
