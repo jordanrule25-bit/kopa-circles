@@ -85,15 +85,30 @@ export default async function Platform() {
         </p>
       </section>
 
-      {/* Headline — on-time percentage with sun-glow backdrop */}
-      <section aria-label="Headline" className="relative overflow-hidden border-y border-fg bg-surface-2/40 px-6 py-14 sm:py-20">
+      {/* Headline — on-time percentage with sun-glow, flanked by a plain-language
+          "what this means" column so the number reads as mission, not dashboard. */}
+      <section aria-label="Headline" className="relative overflow-hidden border-y border-fg">
         <SunGlow />
-        <div className="relative grid justify-items-center gap-3 text-center">
-          <div className="label">Paid on time or covered by the circle</div>
-          <div className="num display-num text-7xl text-accent sm:text-8xl">{pct(s.onTimeRate)}</div>
-          <p className="max-w-xl text-muted">
-            of {s.dueCount} weekly payments due so far. The circle stepped in on {s.coveredByCircle}.
-          </p>
+        <div className="relative grid gap-10 px-6 py-12 sm:grid-cols-[1.1fr_1fr] sm:items-center sm:gap-14 sm:py-16">
+          <div className="grid gap-3 text-center sm:text-left">
+            <div className="label">Paid on time or covered by the circle</div>
+            <div className="num display-num text-7xl text-accent sm:text-8xl">{pct(s.onTimeRate)}</div>
+            <p className="max-w-xl text-muted sm:max-w-none">
+              of {s.dueCount} weekly payments due so far. The circle stepped in on {s.coveredByCircle}.
+            </p>
+          </div>
+          <aside className="grid gap-3 sm:border-l sm:border-line sm:pl-10">
+            <span className="kicker text-sm">What this means for you</span>
+            <p className="text-fg">
+              If you've lent on Kopa, the pilot's loans are being paid back on their original weekly schedule, and the
+              circle covers the gaps before any of your principal is at risk. Lenders have lost{" "}
+              <span className="num font-medium">{usd(s.lenderLossCents)}</span> so far.
+            </p>
+            <p className="text-sm text-muted">
+              Reserve balance: <span className="num font-medium text-fg">{kes(s.reserveKes)}</span>. It pays out before
+              lenders feel a thing.
+            </p>
+          </aside>
         </div>
       </section>
 
@@ -184,10 +199,15 @@ export default async function Platform() {
         <span className="kicker text-sm">— The Kopa ledger</span>
         <p className="max-w-2xl text-sm text-muted">
           Circles today: {count("RAISING")} raising, {count("REPAYING")} repaying, {count("COMPLETE")} complete. All
-          figures converted at KSh {fx.kesPerUsd} per dollar. Pilot build: every person and amount is fictional sample
-          data. <LedgerLink href="/">← Back to the circles</LedgerLink>
+          figures converted at KSh {fx.kesPerUsd} per dollar. <LedgerLink href="/">← Back to the circles</LedgerLink>
         </p>
       </section>
+
+      {/* Colophon */}
+      <aside className="border-t border-line pt-4 font-mono text-[0.7rem] uppercase tracking-[0.18em] text-muted">
+        Published from the Kopa ledger · Pilot edition {edition} · With a licensed Kenyan lending partner · All people
+        and amounts shown are fictional sample data
+      </aside>
     </div>
   );
 }
