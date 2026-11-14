@@ -79,7 +79,11 @@ export async function Shell({ children }: { children: ReactNode }) {
             ) : (
               <>
               {clearPages && <ClearOfflinePages />}
-              <Link href="/signin" className="rounded-full bg-accent px-4 py-1.5 text-sm font-medium text-accent-ink hover:brightness-110">
+              <Link
+                href="/signin"
+                className="inline-flex items-center border border-fg bg-fg px-4 py-1.5 text-sm font-medium text-bg hover:bg-transparent hover:text-fg"
+                style={{ borderRadius: 2 }}
+              >
                 Sign in
               </Link>
               </>

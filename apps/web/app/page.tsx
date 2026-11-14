@@ -3,13 +3,26 @@ import { portfolioStats, prisma } from "@kopa/db";
 import Link from "next/link";
 import { CircleCard } from "@/components/circle-card";
 import { CircleCover } from "@/components/circle-cover";
-import { AcaciaHorizon, CircleOfFive, HandRule, Kicker } from "@/components/motifs";
-import { Bloom, Seed, Sprout } from "@/components/plants";
+import {
+  Dateline,
+  DispatchItem,
+  LedgerButton,
+  LedgerLink,
+  LedgerRow,
+  LedgerTicker,
+  Qa,
+  SectionNo,
+} from "@/components/ledger";
 import { Empty } from "@/components/ui";
 import { loadCircles, summarize } from "@/lib/circles";
 import { kes, pct, usd0 } from "@/lib/format";
 import { currentFx } from "@/lib/fx";
 import { currentUser } from "@/lib/session";
+
+// Launch date: 2026-10-20 (from project memory). "Edition" counts weeks since.
+const LAUNCH = new Date("2026-10-20T00:00:00Z");
+const weeksSince = (now: Date) => Math.max(1, Math.ceil((now.getTime() - LAUNCH.getTime()) / (7 * 24 * 60 * 60 * 1000)));
+const pad2 = (n: number) => String(n).padStart(2, "0");
 
 const FILTERS = [
   { key: "open", label: "Raising now" },
@@ -59,160 +72,103 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ s
     prisma.lenderShare.findMany({ distinct: ["lenderId"], select: { lenderId: true } }),
   ]);
   const towns = new Set(funded.map((l) => l.circle.town));
-  const featured = raising.slice(0, 3);
   const lenderId = user?.lender?.userId;
+  const edition = pad2(weeksSince(today));
+  const todayShort = today.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric", timeZone: "UTC" });
+
+  // Ticker items: a running snapshot of today's ledger.
+  const tickerItems = [
+    { label: "lent to date", value: usd0(stats.disbursedUsd) },
+    { label: "reserve", value: kes(stats.reserveKes) },
+    { label: "circles raising", value: String(raising.length) },
+    { label: "on time", value: pct(stats.onTimeRate) },
+  ];
 
   return (
-    <div className="grid gap-20 sm:gap-28">
-      {/* Hero — editorial two-column spread. Left: kicker, headline, body, CTAs.
-          Right: featured circles tucked in. Words lead, cards follow. */}
-      <section className="relative -mx-5 overflow-hidden rounded-[32px] hero-wash px-5 pb-12 pt-8 sm:pt-16">
-        <div className="relative grid gap-10 lg:grid-cols-[1.55fr_1fr] lg:items-start lg:gap-14">
-          <div className="grid gap-5">
-            <Kicker>A circle of five. One loan each. Lenders earn nothing — and everyone goes further.</Kicker>
-            <h1 className="max-w-3xl text-5xl leading-[1.02] sm:text-7xl">
-              Small loans that grow together.
-            </h1>
-            <p className="max-w-xl text-lg text-muted sm:text-xl">
-              Lend $25 to a circle of five small-business owners in Kenya. They repay weekly on M-Pesa, and your share
-              comes back to lend again. Piloting now — every person shown is fictional sample data.
-            </p>
-            <div className="mt-2 flex flex-wrap gap-3">
-              <a href="#circles" className="inline-flex items-center gap-2 rounded-full bg-accent px-6 py-3 text-base font-medium text-accent-ink shadow-card hover:brightness-110">
-                <CircleOfFive size={20} className="shrink-0" /> Find a circle
-              </a>
-              <a href="#how" className="inline-flex items-center rounded-full border border-line px-6 py-3 text-base font-medium text-fg hover:bg-surface">
-                How it works ›
-              </a>
-            </div>
-          </div>
+    <div className="grid gap-16 sm:gap-20">
+      {/* Dateline flag + ticker — the signature "it's a ledger" element */}
+      <div className="grid gap-0">
+        <Dateline edition={edition} place="Nakuru & Mombasa, Kenya" date={todayShort} />
+        <LedgerTicker items={tickerItems} />
+      </div>
 
-          {featured.length > 0 && (
-            <aside className="relative lg:pt-6" aria-label="Circles raising now">
-              <div className="mb-3 flex items-center gap-2 text-xs uppercase tracking-wider text-muted">
-                <span className="h-px flex-1 bg-line sm:max-w-8" aria-hidden="true" />
-                Raising now
-              </div>
-              <ul className="grid gap-3">
-                {featured.map((c) => (
-                  <li key={c.id}>
-                    <Link
-                      href={`/circles/${c.id}`}
-                      className="group grid grid-cols-[72px_1fr] items-center gap-4 rounded-card bg-surface p-3 shadow-card transition-transform hover:-translate-y-0.5"
-                    >
-                      <CircleCover id={c.id} names={c.members.filter((m) => m.loans.length).map((m) => m.name)} size="sm" />
-                      <div className="min-w-0">
-                        <div className="truncate font-semibold">{c.name}</div>
-                        <div className="truncate text-sm text-muted">
-                          {c.town} · {c.sector}
-                        </div>
-                      </div>
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </aside>
-          )}
-        </div>
-      </section>
-
-      {/* Live impact — acacia horizon backdrop, display-face clay numbers */}
-      <section aria-label="Impact so far" className="relative overflow-hidden rounded-[28px] bg-surface-2/60 px-4 pb-24 pt-10 sm:pb-28">
-        <AcaciaHorizon />
-        <div className="relative grid grid-cols-2 gap-8 text-center sm:grid-cols-4">
-          {[
-            [String(funded.length), "people funded"],
-            [String(towns.size), towns.size === 1 ? "town" : "towns"],
-            [String(lenders.length), "lenders"],
-            [pct(stats.onTimeRate), "paid on time"],
-          ].map(([v, l], i) => (
-            <div key={l}>
-              <div className={`num display-num text-5xl sm:text-6xl ${i === 3 ? "text-accent" : "text-clay"}`}>{v}</div>
-              <div className="label mt-2">{l}</div>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      <HandRule className="opacity-80" />
-
-      {/* How it works */}
-      <section id="how" className="grid scroll-mt-24 gap-12">
-        <div className="text-center">
-          <h2 className="text-4xl font-semibold sm:text-5xl">How it works</h2>
-          <p className="mt-2 text-lg text-muted">Three steps, about six months.</p>
-        </div>
-        <ol className="grid gap-6 sm:grid-cols-3">
-          {[
-            { Icon: Seed, title: "A circle forms", body: "Five people who already know and trust each other apply together. A local agent checks what each can afford." },
-            { Icon: Sprout, title: "You lend $25 or more", body: "Lenders around the world fund the circle. Once it's fully funded, each member gets their own loan on M-Pesa." },
-            { Icon: Bloom, title: "They repay, you relend", body: "Members repay weekly at their circle meeting for 26 weeks. Your share comes back to your balance to lend again." },
-          ].map(({ Icon, title, body }, i) => (
-            <li key={title} className="grid content-start gap-4 rounded-card bg-surface p-7 shadow-card">
-              <Icon size={48} />
-              <div className="text-sm font-medium text-accent">Step {i + 1}</div>
-              <h3 className="text-2xl font-semibold">{title}</h3>
-              <p className="text-muted">{body}</p>
-            </li>
-          ))}
-        </ol>
-      </section>
-
-      {/* Safety net */}
-      <section className="grid gap-10 rounded-[28px] bg-surface p-8 shadow-card sm:p-14">
-        <div className="max-w-2xl">
-          <h2 className="text-4xl font-semibold sm:text-5xl">A safety net with layers.</h2>
-          <p className="mt-3 text-lg text-muted">
-            When a payment is missed, lenders are the last to feel it. 1.5% of every loan goes into a first-loss reserve, and anyone can see its balance.
+      {/* Masthead — editorial hero. No pill, no centered pitch. */}
+      <section className="grid gap-6">
+        <span className="kicker text-base sm:text-lg">
+          A circle of five. One loan each. Lenders earn nothing, and everyone goes further.
+        </span>
+        <h1 className="max-w-4xl text-[clamp(2.8rem,7vw,5.5rem)] leading-[0.98] font-display">
+          Small loans that grow together.
+        </h1>
+        <div className="grid max-w-5xl gap-8 border-y border-fg py-6 sm:grid-cols-[2fr_1fr] sm:items-start sm:gap-14">
+          <p className="max-w-xl text-lg leading-relaxed text-fg sm:text-xl">
+            Lend $25 to a circle of five small-business owners in Kenya. They repay weekly on M-Pesa; your share comes
+            back to lend again. The circle covers for anyone who falls behind, then a first-loss reserve, before lenders
+            feel a thing.
           </p>
+          <aside className="grid gap-3 text-sm leading-relaxed text-muted">
+            <div>
+              <span className="label block">The product in a line</span>
+              <span>Kiva's lender product, Grameen's circle mechanics, M-Pesa rails. No MFI in the middle.</span>
+            </div>
+            <div>
+              <span className="label block">Lender return</span>
+              <span className="num font-medium text-fg">0.00% — principal only</span>
+            </div>
+            <div>
+              <span className="label block">Borrower cost</span>
+              <span className="num font-medium text-fg">7.00% flat · 26 weekly payments</span>
+            </div>
+          </aside>
         </div>
-        <ol className="grid gap-3 sm:grid-cols-4" aria-label="Who covers a missed payment, in order">
-          {[
-            ["The member", "Pays weekly at the circle meeting."],
-            ["Their circle", "Can chip in so a member doesn't fall behind."],
-            ["The reserve", `${kes(stats.reserveKes)} today, covering unpaid principal.`],
-            ["Lenders", "Lose only what the reserve can't cover."],
-          ].map(([title, body], i) => (
-            <li key={title} className="relative grid content-start gap-1 rounded-2xl bg-surface-2 p-5">
-              <span className="num text-sm font-semibold text-accent">{i + 1}</span>
-              <span className="text-lg font-semibold">{title}</span>
-              <span className="text-sm text-muted">{body}</span>
-              {i < 3 && (
-                <span className="absolute -right-3 top-1/2 z-10 hidden -translate-y-1/2 text-xl text-muted sm:block" aria-hidden="true">
-                  ›
-                </span>
-              )}
-            </li>
-          ))}
-        </ol>
-        <Link href="/platform" className="text-lg font-medium text-accent hover:underline">
-          See every number in the transparency report ›
-        </Link>
+        <div className="flex flex-wrap items-center gap-3">
+          <LedgerButton href="#circles">Browse circles raising now</LedgerButton>
+          <LedgerLink href="#how">Read how it works</LedgerLink>
+        </div>
       </section>
 
-      {/* Circles */}
-      <section id="circles" className="grid scroll-mt-24 gap-8">
-        <div className="flex flex-wrap items-end justify-between gap-4">
-          <div>
-            <h2 className="text-4xl font-semibold sm:text-5xl">Circles</h2>
-            <p className="mt-1 text-lg text-muted">
-              {raising.length} raising now{stats.disbursedUsd ? ` · ${usd0(stats.disbursedUsd)} lent so far` : ""}
-            </p>
-          </div>
-          <nav className="flex gap-1 rounded-full bg-surface p-1 shadow-card" aria-label="Filter circles">
-            {FILTERS.map((f) => (
+      {/* No. 01 — Loans in motion. Dense running list of circles raising. */}
+      <section id="circles" className="grid scroll-mt-24 gap-6">
+        <SectionNo
+          no="01"
+          title="Loans in motion"
+          sub={`${raising.length} circles are raising from lenders right now${stats.disbursedUsd ? `, ${usd0(stats.disbursedUsd)} already lent across the pilot.` : "."}`}
+          rightSlot={
+            <nav className="flex gap-4 text-sm" aria-label="Filter circles">
+              {FILTERS.map((f) => (
+                <Link
+                  key={f.key}
+                  href={f.key === "open" ? "/#circles" : `/?show=${f.key}#circles`}
+                  scroll={false}
+                  aria-current={show === f.key ? "true" : undefined}
+                  className={`${show === f.key ? "text-fg underline underline-offset-4" : "text-muted hover:text-fg"}`}
+                >
+                  {f.label}
+                </Link>
+              ))}
+            </nav>
+          }
+        />
+
+        {raising.slice(0, 3).length > 0 && (
+          <div className="grid gap-4 border-b border-line pb-6 sm:grid-cols-3">
+            {raising.slice(0, 3).map((c) => (
               <Link
-                key={f.key}
-                href={f.key === "open" ? "/#circles" : `/?show=${f.key}#circles`}
-                scroll={false}
-                aria-current={show === f.key ? "true" : undefined}
-                className={`rounded-full px-3.5 py-1 text-sm font-medium transition-colors ${show === f.key ? "bg-fg text-bg" : "text-muted hover:text-fg"}`}
+                key={c.id}
+                href={`/circles/${c.id}`}
+                className="group grid gap-3 border-t border-line pt-4 transition-opacity hover:opacity-80"
               >
-                {f.label}
+                <CircleCover id={c.id} names={c.members.filter((m) => m.loans.length).map((m) => m.name)} size="md" />
+                <div>
+                  <div className="kicker not-italic text-xs">Circle · {c.town}</div>
+                  <div className="font-display text-xl">{c.name}</div>
+                  <div className="text-sm text-muted">{c.sector}</div>
+                </div>
               </Link>
             ))}
-          </nav>
-        </div>
+          </div>
+        )}
+
         {circles.length === 0 ? (
           <Empty title="Nothing here right now">Every listed circle is funded. New circles list as agents submit them.</Empty>
         ) : (
@@ -230,32 +186,72 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ s
         )}
       </section>
 
-      {/* FAQ */}
-      <section className="mx-auto grid w-full max-w-3xl gap-8">
-        <h2 className="text-center text-4xl font-semibold sm:text-5xl">Straight answers</h2>
-        <div className="divide-y divide-line rounded-card bg-surface px-6 shadow-card">
+      {/* No. 02 — How the circle math works. Numbered editorial, no icons. */}
+      <section id="how" className="grid scroll-mt-24 gap-6">
+        <SectionNo no="02" title="How the circle math works" sub="Three stages, about six months from first lender to final payment." />
+        <div className="grid">
+          <DispatchItem no="01" title="A circle forms">
+            Five people who already know and trust each other apply together. A local agent sits with them, checks each
+            member's M-Pesa inflow and credit-bureau record, and sets a cap no one can borrow past — a quarter of what
+            their weekly income can repay. First loans cap at $150.
+          </DispatchItem>
+          <DispatchItem no="02" title="Lenders fund the circle">
+            People around the world lend $25 or more. When the circle is fully funded, the licensed Kenyan partner sends
+            each member their loan directly on M-Pesa the same day.
+          </DispatchItem>
+          <DispatchItem no="03" title="They repay, you re-lend">
+            Members repay weekly at the circle meeting for 26 weeks. If someone is short, the circle talks it through
+            and usually covers. Your share comes back to your Kopa balance, ready to lend to the next circle.
+          </DispatchItem>
+        </div>
+      </section>
+
+      {/* No. 03 — The safety net. Ordered list with rule lines. */}
+      <section className="grid gap-6">
+        <SectionNo
+          no="03"
+          title="The safety net, in order"
+          sub={`When a payment is missed, lenders are the last to feel it. 1.5% of every loan goes into a first-loss reserve, currently ${kes(stats.reserveKes)}, and anyone can watch its balance.`}
+        />
+        <ol className="grid" aria-label="Who covers a missed payment, in order">
+          <LedgerRow no="01" label="The member" sub="Pays weekly at the circle meeting." value="pays" />
+          <LedgerRow no="02" label="Their circle" sub="Can chip in so a member doesn't fall behind. The pilot has seen this handle most short weeks." value="covers" />
+          <LedgerRow no="03" label="The first-loss reserve" sub="1.5% of every loan disbursed. Pays out before lenders feel anything." value={kes(stats.reserveKes)} tone="clay" />
+          <LedgerRow no="04" label="Lenders" sub="Lose only what the reserve can't cover. At current reserve depth, losses stay small." value="last" tone="accent" />
+        </ol>
+        <div>
+          <LedgerLink href="/platform">See every number in the transparency report →</LedgerLink>
+        </div>
+      </section>
+
+      {/* No. 04 — Public record. The numbers as a ruled table. */}
+      <section className="grid gap-6">
+        <SectionNo no="04" title="Public record" sub="Live from the ledger — updated on every page load." />
+        <div className="grid">
+          <LedgerRow no="01" label="People funded so far" value={String(funded.length)} tone="clay" />
+          <LedgerRow no="02" label={towns.size === 1 ? "Town the pilot has reached" : "Towns the pilot has reached"} value={String(towns.size)} tone="clay" />
+          <LedgerRow no="03" label="Lenders participating" value={String(lenders.length)} tone="clay" />
+          <LedgerRow no="04" label="Weekly payments met on time or covered" value={pct(stats.onTimeRate)} tone="accent" />
+        </div>
+      </section>
+
+      {/* No. 05 — Straight answers. Q&A as running copy, no accordion. */}
+      <section className="mx-auto grid w-full max-w-3xl gap-6">
+        <SectionNo no="05" title="Straight answers" />
+        <div className="grid">
           {FAQ.map(({ q, a }) => (
-            <details key={q} className="group py-5">
-              <summary className="flex cursor-pointer list-none items-center justify-between gap-4 text-lg font-medium [&::-webkit-details-marker]:hidden">
-                {q}
-                <span className="text-2xl font-light text-muted transition-transform group-open:rotate-45" aria-hidden="true">
-                  +
-                </span>
-              </summary>
-              <p className="mt-3 text-muted">{a}</p>
-            </details>
+            <Qa key={q} q={q} a={a} />
           ))}
         </div>
       </section>
 
-      <HandRule className="opacity-80" />
-
-      {/* Closing */}
-      <section className="grid justify-items-center gap-5 pb-8 text-center">
-        <h2 className="max-w-2xl text-4xl font-semibold sm:text-5xl">$25 is enough to start something.</h2>
-        <a href="#circles" className="rounded-full bg-accent px-6 py-3 text-lg font-medium text-accent-ink hover:brightness-110">
-          Find a circle
-        </a>
+      {/* Sign-off — editorial close, not a marketing CTA */}
+      <section className="grid gap-3 border-t border-fg pt-6">
+        <span className="kicker text-sm">— The Kopa editors</span>
+        <p className="max-w-2xl text-lg text-fg">
+          Every figure above came from the ledger. If you'd like a share of the next circle, $25 is enough to start.{" "}
+          <LedgerLink href="#circles">Browse circles raising now</LedgerLink>.
+        </p>
       </section>
     </div>
   );
