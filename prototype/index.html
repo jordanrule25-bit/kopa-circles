@@ -105,9 +105,35 @@ form.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr))
 .log div{display:flex;gap:10px}
 .log .num{color:var(--muted);flex:none}
 
-dialog{border:1px solid var(--line);border-radius:14px;background:var(--surface);color:var(--fg);padding:0;width:min(720px,calc(100% - 32px));max-height:85vh}
+dialog{border:1px solid var(--line);border-radius:14px;background:var(--surface);color:var(--fg);padding:0;width:min(760px,calc(100% - 32px));max-height:88vh}
 dialog::backdrop{background:rgba(10,14,12,.45)}
 .dlg{padding:20px;display:grid;gap:16px}
+/* Big member ring — the "borrowers visualized in a circle" view */
+.ring-wrap{display:grid;grid-template-columns:minmax(220px,300px) 1fr;gap:20px;align-items:start}
+@media (max-width:620px){.ring-wrap{grid-template-columns:1fr}}
+.member-ring{position:relative;aspect-ratio:1/1;width:100%;max-width:300px;margin:0 auto;background:var(--surface-2);border-radius:50%}
+.member-ring svg{position:absolute;inset:0;width:100%;height:100%}
+.member-ring .seat{position:absolute;width:30%;height:30%;transform:translate(-50%,-50%);display:grid;place-items:center;cursor:pointer;border:0;background:transparent;padding:0}
+.member-ring .seat .chip-member{width:100%;height:100%;border-radius:50%;background:var(--surface);border:2px solid var(--accent);display:grid;place-items:center;font-family:var(--font-display);font-weight:500;font-size:1.1rem;color:var(--fg);transition:transform .15s ease, box-shadow .15s ease, border-color .15s ease;box-shadow:0 2px 6px rgba(0,0,0,.08)}
+.member-ring .seat:hover .chip-member{transform:translateY(-2px);box-shadow:0 4px 14px rgba(0,0,0,.12)}
+.member-ring .seat[aria-pressed="true"] .chip-member{border-color:var(--fg);background:var(--accent-soft);transform:translateY(-2px)}
+.member-ring .seat[data-state="late"] .chip-member{border-color:var(--bad);background:var(--bad-soft);color:var(--bad)}
+.member-ring .seat[data-state="covered"] .chip-member{border-color:var(--sun);background:var(--sun-soft)}
+.member-ring .seat[data-state="pending"] .chip-member{border-color:var(--line);opacity:.8}
+.member-ring .seat-label{position:absolute;left:50%;top:100%;transform:translateX(-50%);margin-top:4px;font-size:.72rem;color:var(--muted);white-space:nowrap;pointer-events:none;max-width:120px;overflow:hidden;text-overflow:ellipsis}
+.member-ring .center{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);text-align:center;pointer-events:none;color:var(--muted);font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;font-weight:600}
+.member-ring .center strong{display:block;font-family:var(--font-display);font-weight:500;font-size:1.3rem;color:var(--fg);letter-spacing:-.01em;text-transform:none;margin-top:4px}
+.member-panel{display:grid;gap:10px;background:var(--surface-2);border:1px solid var(--line);border-radius:var(--r);padding:14px}
+.member-panel h4{margin:0;font-family:var(--font-display);font-size:1.05rem}
+.member-panel .business{font-size:.85rem;color:var(--muted)}
+.member-panel .m-row{display:flex;justify-content:space-between;gap:12px;font-size:.88rem;border-top:1px dashed var(--line);padding-top:8px}
+.member-panel .m-row:first-of-type{border-top:0;padding-top:0}
+.member-panel .m-row .k{color:var(--muted)}
+.member-panel .m-state{display:inline-block;padding:3px 10px;border-radius:99px;font-size:.78rem;font-weight:600;background:var(--accent-soft);color:var(--fg)}
+.member-panel .m-state.late{background:var(--bad-soft);color:var(--bad)}
+.member-panel .m-state.covered{background:var(--sun-soft)}
+.member-panel .m-state.pending{background:var(--surface);border:1px solid var(--line);color:var(--muted)}
+.member-panel .m-empty{color:var(--muted);font-size:.9rem}
 .toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--fg);color:var(--bg);padding:10px 16px;border-radius:8px;font-weight:600;font-size:.9rem;z-index:30}
 .note{font-size:.8rem;color:var(--muted)}
 @media (prefers-reduced-motion:no-preference){.progress span{transition:width .4s ease}}
@@ -479,17 +505,88 @@ function render(){
   if (tab === 'platform') renderPlatform();
 }
 
+function memberState(c, m){
+  if (c.status === 'raising') return 'pending';
+  if (m.arrears > 0) return 'late';
+  if (m.covered > 0) return 'covered';
+  return 'ok';
+}
+function memberStateLabel(c, m){
+  if (c.status === 'raising') return 'Waiting for funding';
+  if (m.arrears > 0) return `Behind ${usd(m.arrears)}`;
+  if (m.covered > 0) return `Circle covered ${usd(m.covered)}`;
+  return 'On time';
+}
+function initialsOf(name){
+  return name.replace(/\./g,'').split(/\s+/).filter(Boolean).slice(0,2).map(w => w[0].toUpperCase()).join('');
+}
+
 function openCircle(id){
   const c = S.circles.find(x => x.id === id); if (!c) return;
-  const rows = c.members.map(m => {
-    const inst = m.amount * (1 + FEE) / WEEKS;
-    const status = c.status === 'raising' ? 'Waiting for funding' : m.arrears > 0 ? `Behind ${usd(m.arrears)}` : m.covered > 0 ? `On time (circle covered ${usd(m.covered)})` : 'On time';
-    return `<tr><td>${m.name}<div class="muted" style="font-size:.8rem">${m.business}</div></td><td class="r num">${usd0(m.amount)}<div class="muted" style="font-size:.8rem">${kes(m.amount)}</div></td><td class="r num">${usd(inst)}</td><td class="r num">${usd(m.paid)}</td><td>${status}</td></tr>`;
+  const n = c.members.length;
+  const radiusPct = 36; // percent of ring-wrap width from centre
+  // Build the ring seats: five member circles arranged around a centre point.
+  const seats = c.members.map((m, i) => {
+    const angle = (-90 + (360 / n) * i) * Math.PI / 180;
+    const x = 50 + Math.cos(angle) * radiusPct;
+    const y = 50 + Math.sin(angle) * radiusPct;
+    const state = memberState(c, m);
+    return `<button class="seat" data-i="${i}" data-state="${state}" style="left:${x}%;top:${y}%" title="${m.name}" aria-pressed="false">
+      <span class="chip-member">${initialsOf(m.name)}</span>
+      <span class="seat-label">${m.name.split(' ')[0]}</span>
+    </button>`;
   }).join('');
+
+  // Centre of the ring: small label with the total loan or circle status.
+  const centreLabel = c.status === 'raising'
+    ? `Raising<strong>${usd0(c.need)}</strong>`
+    : c.status === 'complete'
+    ? `Repaid<strong>${usd0(c.need)}</strong>`
+    : `Week ${c.week} of ${WEEKS}<strong>${usd0(c.need)} lent</strong>`;
+
+  // Table below the ring stays for quick scanning.
+  const rows = c.members.map((m, i) => {
+    const inst = m.amount * (1 + FEE) / WEEKS;
+    return `<tr><td>${m.name}<div class="muted" style="font-size:.8rem">${m.business}</div></td><td class="r num">${usd0(m.amount)}<div class="muted" style="font-size:.8rem">${kes(m.amount)}</div></td><td class="r num">${usd(inst)}</td><td class="r num">${usd(m.paid)}</td><td>${memberStateLabel(c, m)}</td></tr>`;
+  }).join('');
+
   $('#dlgBody').innerHTML = `<div class="card-head"><div><h2>${c.name}</h2><div class="place">${c.place}, Kenya · ${c.sector} · ${ordinal(c.cycle)} loan</div></div><button class="btn" id="dlgClose">Close</button></div>
     <p style="margin:0">${c.story}</p>
-    <div class="tablewrap"><table><thead><tr><th>Member</th><th class="r">Loan</th><th class="r">Weekly</th><th class="r">Paid</th><th>Status</th></tr></thead><tbody>${rows}</tbody></table></div>
+    <div class="ring-wrap">
+      <div class="member-ring" role="group" aria-label="Members of ${c.name}">
+        ${seats}
+        <div class="center">${centreLabel}</div>
+      </div>
+      <aside class="member-panel" id="memberDetail" aria-live="polite">
+        <div class="m-empty">Click a member in the circle to see their loan, weekly payment and status.</div>
+      </aside>
+    </div>
+    <details><summary class="link" style="cursor:pointer">See all members in a table</summary>
+      <div class="tablewrap" style="margin-top:10px"><table><thead><tr><th>Member</th><th class="r">Loan</th><th class="r">Weekly</th><th class="r">Paid</th><th>Status</th></tr></thead><tbody>${rows}</tbody></table></div>
+    </details>
     <p class="note" style="margin:0">Flat 7% fee, 26 weekly payments at the circle meeting, about ${pct(weeklyAPR(FEE, WEEKS))} APR. Amounts in KSh at about ${KES} per dollar. Members are fictional sample borrowers.</p>`;
+
+  // Wire up: click a seat to show that member's detail in the side panel.
+  const seatsEls = $('#dlgBody').querySelectorAll('.seat');
+  const panel = $('#memberDetail');
+  const showMember = (i) => {
+    seatsEls.forEach(s => s.setAttribute('aria-pressed', s.dataset.i === String(i) ? 'true' : 'false'));
+    const m = c.members[i];
+    const inst = m.amount * (1 + FEE) / WEEKS;
+    const state = memberState(c, m);
+    const stateLabel = memberStateLabel(c, m);
+    panel.innerHTML = `
+      <div><h4>${m.name}</h4><div class="business">${m.business} · ${c.place}</div></div>
+      <div class="m-row"><span class="k">Loan</span><span class="num">${usd0(m.amount)} <span class="muted" style="font-size:.78rem">${kes(m.amount)}</span></span></div>
+      <div class="m-row"><span class="k">Weekly payment</span><span class="num">${usd(inst)}</span></div>
+      <div class="m-row"><span class="k">Paid so far</span><span class="num">${usd(m.paid)}</span></div>
+      ${m.covered > 0 ? `<div class="m-row"><span class="k">Covered by circle</span><span class="num">${usd(m.covered)}</span></div>` : ''}
+      ${m.arrears > 0 ? `<div class="m-row"><span class="k">Behind</span><span class="num">${usd(m.arrears)}</span></div>` : ''}
+      <div class="m-row"><span class="k">Status</span><span class="m-state ${state}">${stateLabel}</span></div>
+    `;
+  };
+  seatsEls.forEach(s => s.addEventListener('click', () => showMember(+s.dataset.i)));
+
   const d = $('#dlg'); d.showModal(); $('#dlgClose').onclick = () => d.close();
 }
 
