@@ -17,8 +17,15 @@ export const sessionCookie = (value: string) => ({
   maxAge: SESSION_MAX_AGE,
 });
 
-/** The account switcher and dev outbox. Never available in a production build. */
-export const devLoginEnabled = () => process.env.DEV_LOGIN === "1" && process.env.NODE_ENV !== "production";
+/** The account switcher and dev outbox. Enabled in local dev (DEV_LOGIN=1, not
+ *  production) or on the public demo build (DEMO_MODE=1). The demo flag is set
+ *  only on the demo Vercel deployment, never on the real production project. */
+export const devLoginEnabled = () =>
+  (process.env.DEV_LOGIN === "1" && process.env.NODE_ENV !== "production") || process.env.DEMO_MODE === "1";
+
+/** True in the public demo build. Used to show the "Sample data" banner and
+ *  to put the demo account switcher front-and-centre. */
+export const demoMode = () => process.env.DEMO_MODE === "1";
 
 const include = { lender: true, agent: { include: { partner: true } } } as const;
 export type SessionUser = NonNullable<Awaited<ReturnType<typeof currentUser>>>;

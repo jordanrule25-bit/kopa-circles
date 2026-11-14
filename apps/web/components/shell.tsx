@@ -5,7 +5,7 @@ import { signOut } from "@/app/auth-actions";
 import { switchDevUser } from "@/app/dev-user";
 import { usd } from "@/lib/format";
 import { cookies } from "next/headers";
-import { CLEAR_PAGES_COOKIE, currentUser, devLoginEnabled } from "@/lib/session";
+import { CLEAR_PAGES_COOKIE, currentUser, demoMode, devLoginEnabled } from "@/lib/session";
 import { NavTabs } from "./nav-tabs";
 import { ClearOfflinePages } from "./offline";
 import { Leaf } from "./plants";
@@ -38,6 +38,7 @@ const PUBLIC_TABS = [
 
 export async function Shell({ children }: { children: ReactNode }) {
   const dev = devLoginEnabled();
+  const isDemo = demoMode();
   const clearPages = (await cookies()).has(CLEAR_PAGES_COOKIE);
   const [user, users] = await Promise.all([
     currentUser(),
@@ -53,6 +54,14 @@ export async function Shell({ children }: { children: ReactNode }) {
       >
         Skip to content
       </a>
+      {isDemo && (
+        <div className="bg-accent text-accent-ink">
+          <div className="mx-auto flex max-w-[1080px] flex-wrap items-center justify-between gap-2 px-5 py-1.5 text-xs">
+            <span className="font-medium">Kopa Circles — sample demo</span>
+            <span className="opacity-90">Every person, loan, and payment on this page is fictional. Switch roles below to explore.</span>
+          </div>
+        </div>
+      )}
       <header className="sticky top-0 z-10 border-b border-line/70 bg-glass backdrop-blur-xl backdrop-saturate-150">
         <div className="mx-auto flex max-w-[1080px] flex-wrap items-center gap-x-8 gap-y-1 px-5 py-2.5">
           <Link href="/" className="flex items-center gap-2">
